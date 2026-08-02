@@ -24,3 +24,4 @@ function Dashboard({ machines, kpis, trendData, handleAddMachine }) {
     </div>
   );
 }
+export default App;

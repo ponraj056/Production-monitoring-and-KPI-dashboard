@@ -25,7 +25,7 @@ function ProductionChart({ data }) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
-          <XAxis dataKey="shift" stroke="#8b949e" fontSize={12} />
+          <XAxis dataKey="shift" stroke="#8b949e" fontSize={11} angle={-35} textAnchor="end" height={60} />
           <YAxis stroke="#8b949e" fontSize={12} />
           <Tooltip
             contentStyle={{ background: '#161b22', border: '1px solid #21262d', borderRadius: '8px' }}

@@ -96,13 +96,22 @@ function App() {
     throughput: 145,
   });
 
-  const [trendData] = useState([
-    { shift: 'Mon-Morning', produced: 120, defects: 5 },
-    { shift: 'Mon-Evening', produced: 135, defects: 3 },
-    { shift: 'Tue-Morning', produced: 110, defects: 8 },
-    { shift: 'Tue-Evening', produced: 150, defects: 4 },
-    { shift: 'Wed-Morning', produced: 140, defects: 2 },
-  ]);
+ const [trendData] = useState([
+  { shift: 'Mon-Morning', produced: 120, defects: 5 },
+  { shift: 'Mon-Evening', produced: 135, defects: 3 },
+  { shift: 'Tue-Morning', produced: 110, defects: 8 },
+  { shift: 'Tue-Evening', produced: 150, defects: 4 },
+  { shift: 'Wed-Morning', produced: 140, defects: 2 },
+  { shift: 'Wed-Evening', produced: 128, defects: 6 },
+  { shift: 'Thu-Morning', produced: 155, defects: 3 },
+  { shift: 'Thu-Evening', produced: 142, defects: 5 },
+  { shift: 'Fri-Morning', produced: 118, defects: 9 },
+  { shift: 'Fri-Evening', produced: 160, defects: 2 },
+  { shift: 'Sat-Morning', produced: 95, defects: 4 },
+  { shift: 'Sat-Evening', produced: 88, defects: 3 },
+  { shift: 'Sun-Morning', produced: 70, defects: 1 },
+  { shift: 'Sun-Evening', produced: 65, defects: 2 },
+]);
   const [activities] = useState([
   { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
   { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },

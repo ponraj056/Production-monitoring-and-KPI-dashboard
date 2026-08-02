@@ -1,51 +1,58 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../api';
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // MOCK LOGIN: replace this with a real API call later
-    if (email === 'admin@test.com' && password === '1234') {
-      const fakeToken = 'mock-jwt-token-abc123';
-      onLogin(fakeToken);
+    try {
+      const data = await api.login(username, password);
+      // Store token so it persists across page refreshes
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      onLogin(data.token);
       navigate('/dashboard');
-    } else {
-      setError('Invalid email or password');
+    } catch (err) {
+      setError(err.message || 'Invalid username or password');
+    } finally {
+      setLoading(false);
     }
   };
 
-
-    return (
-  <div className="login-container">
-    <div className="login-card">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {error && <p className="login-error">{error}</p>}
-        <button type="submit">Login</button>
-      </form>
-      <p className="login-hint">(Mock login: admin@test.com / 1234)</p>
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && <p className="login-error">{error}</p>}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default Login;

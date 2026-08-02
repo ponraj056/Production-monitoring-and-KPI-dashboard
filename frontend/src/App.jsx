@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
@@ -10,8 +10,9 @@ import './App.css';
 import DowntimeLogs from './components/DowntimeLogs';
 import Reports from './components/Reports';
 import ActivityFeed from './components/ActivityFeed';
+import { api } from './api';
 
-function DashboardPage({ kpis, trendData, activities }) {
+function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -22,7 +23,7 @@ function DashboardPage({ kpis, trendData, activities }) {
       </div>
 
       <h2>Key Metrics</h2>
-      <KPICards kpis={kpis} />
+      {loading ? <p>Loading KPIs...</p> : <KPICards kpis={kpis} />}
 
       <h2>Production Trend</h2>
       <div className="chart-panel">
@@ -35,8 +36,7 @@ function DashboardPage({ kpis, trendData, activities }) {
   );
 }
 
-
-function MachinesPage({ machines, handleAddMachine }) {
+function MachinesPage({ machines, handleAddMachine, loading }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -45,7 +45,7 @@ function MachinesPage({ machines, handleAddMachine }) {
       <h2>Add Machine</h2>
       <MachineForm onAddMachine={handleAddMachine} />
       <h2>All Machines</h2>
-      <MachineList machines={machines} />
+      {loading ? <p>Loading machines...</p> : <MachineList machines={machines} />}
     </div>
   );
 }
@@ -82,50 +82,76 @@ function AppLayout({ children, onLogout }) {
 }
 
 function App() {
-  const [token, setToken] = useState(null);
+  // On load, check if a token already exists (keeps user logged in on refresh)
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const [machines, setMachines] = useState([
-    { id: 1, name: 'CNC Machine 1', type: 'CNC', status: 'running' },
-    { id: 2, name: 'Press Machine 2', type: 'Press', status: 'idle' },
-  ]);
-
-  const [kpis] = useState({
-    oee: 78,
-    downtime: 12,
-    defectRate: 3.5,
-    throughput: 145,
-  });
-
- const [trendData] = useState([
-  { shift: 'Mon-Morning', produced: 120, defects: 5 },
-  { shift: 'Mon-Evening', produced: 135, defects: 3 },
-  { shift: 'Tue-Morning', produced: 110, defects: 8 },
-  { shift: 'Tue-Evening', produced: 150, defects: 4 },
-  { shift: 'Wed-Morning', produced: 140, defects: 2 },
-  { shift: 'Wed-Evening', produced: 128, defects: 6 },
-  { shift: 'Thu-Morning', produced: 155, defects: 3 },
-  { shift: 'Thu-Evening', produced: 142, defects: 5 },
-  { shift: 'Fri-Morning', produced: 118, defects: 9 },
-  { shift: 'Fri-Evening', produced: 160, defects: 2 },
-  { shift: 'Sat-Morning', produced: 95, defects: 4 },
-  { shift: 'Sat-Evening', produced: 88, defects: 3 },
-  { shift: 'Sun-Morning', produced: 70, defects: 1 },
-  { shift: 'Sun-Evening', produced: 65, defects: 2 },
-]);
+  const [machines, setMachines] = useState([]);
+  const [kpis, setKpis] = useState({ oee: 0, downtime: 0, defectRate: 0, throughput: 0 });
+  const [trendData, setTrendData] = useState([]);
   const [activities] = useState([
-  { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
-  { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },
-  { id: 3, type: 'maintenance', text: 'Scheduled maintenance started on CNC Machine 1', time: '1 hour ago' },
-  { id: 4, type: 'error', text: '3 defective units flagged on Press Machine 2', time: '2 hours ago' },
-  { id: 5, type: 'added', text: 'New machine "Welding Unit 3" registered', time: '5 hours ago' },
-]);
+    { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
+    { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },
+    { id: 3, type: 'maintenance', text: 'Scheduled maintenance started on CNC Machine 1', time: '1 hour ago' },
+    { id: 4, type: 'error', text: '3 defective units flagged on Press Machine 2', time: '2 hours ago' },
+    { id: 5, type: 'added', text: 'New machine "Welding Unit 3" registered', time: '5 hours ago' },
+  ]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddMachine = (newMachine) => {
-    setMachines([...machines, newMachine]);
+  // Fetch real data from backend once logged in
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [machinesData, kpiData, logsData] = await Promise.all([
+          api.getMachines(),
+          api.getKpiSummary(),
+          api.getProductionLogs(),
+        ]);
+
+        setMachines(machinesData);
+
+        setKpis({
+          oee: kpiData.oee,
+          downtime: kpiData.downtimePercent,
+          defectRate: kpiData.defectRate,
+          throughput: kpiData.totalUnits,
+        });
+
+        // Map production_logs rows into chart-friendly shape
+        const chartData = logsData.map((log) => ({
+          shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
+          produced: log.units_produced,
+          defects: log.defective_units,
+        }));
+        setTrendData(chartData);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  const handleAddMachine = async (newMachine) => {
+    try {
+      const created = await api.createMachine(newMachine);
+      setMachines([...machines, created]);
+    } catch (err) {
+      console.error('Failed to create machine:', err);
+      alert(err.message);
+    }
   };
 
   const handleLogin = (newToken) => setToken(newToken);
-  const handleLogout = () => setToken(null);
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+  };
 
   const requireAuth = (element) => (token ? element : <Navigate to="/login" />);
 
@@ -138,7 +164,7 @@ function App() {
           path="/dashboard"
           element={requireAuth(
             <AppLayout onLogout={handleLogout}>
-             <DashboardPage kpis={kpis} trendData={trendData} activities={activities} />
+              <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} />
             </AppLayout>
           )}
         />
@@ -147,7 +173,7 @@ function App() {
           path="/machines"
           element={requireAuth(
             <AppLayout onLogout={handleLogout}>
-              <MachinesPage machines={machines} handleAddMachine={handleAddMachine} />
+              <MachinesPage machines={machines} handleAddMachine={handleAddMachine} loading={loading} />
             </AppLayout>
           )}
         />
@@ -161,14 +187,14 @@ function App() {
           )}
         />
 
-<Route
-  path="/reports"
-  element={requireAuth(
-    <AppLayout onLogout={handleLogout}>
-      <ReportsPage machines={machines} trendData={trendData} />
-    </AppLayout>
-  )}
-/>
+        <Route
+          path="/reports"
+          element={requireAuth(
+            <AppLayout onLogout={handleLogout}>
+              <ReportsPage machines={machines} trendData={trendData} />
+            </AppLayout>
+          )}
+        />
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

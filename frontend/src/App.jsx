@@ -7,6 +7,8 @@ import MachineForm from './components/MachineForm';
 import KPICards from './components/KPICards';
 import ProductionChart from './components/ProductionChart';
 import './App.css';
+import DowntimeLogs from './components/DowntimeLogs';
+import Reports from './components/Reports';
 
 function DashboardPage({ kpis, trendData }) {
   return (
@@ -49,18 +51,18 @@ function DowntimeLogsPage() {
       <div className="dashboard-header">
         <h1>⏱ Downtime Logs</h1>
       </div>
-      <p style={{ color: '#8b949e' }}>Downtime logging UI coming soon.</p>
+      <DowntimeLogs />
     </div>
   );
 }
 
-function ReportsPage() {
+function ReportsPage({ machines, trendData }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>📄 Reports</h1>
       </div>
-      <p style={{ color: '#8b949e' }}>Report export coming soon.</p>
+      <Reports machines={machines} trendData={trendData} />
     </div>
   );
 }
@@ -138,14 +140,14 @@ function App() {
           )}
         />
 
-        <Route
-          path="/reports"
-          element={requireAuth(
-            <AppLayout onLogout={handleLogout}>
-              <ReportsPage />
-            </AppLayout>
-          )}
-        />
+<Route
+  path="/reports"
+  element={requireAuth(
+    <AppLayout onLogout={handleLogout}>
+      <ReportsPage machines={machines} trendData={trendData} />
+    </AppLayout>
+  )}
+/>
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

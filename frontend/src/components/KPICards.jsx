@@ -1,35 +1,87 @@
-function KPICards({ kpis }) {
-  const cardStyle = {
-    display: 'inline-block',
-    width: '180px',
-    padding: '16px',
-    margin: '10px',
-    borderRadius: '8px',
-    background: '#f4f4f4',
-    textAlign: 'center',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-  };
+import { useEffect, useState } from 'react';
+import { Gauge, TimerOff, AlertTriangle, TrendingUp, ArrowUp, ArrowDown } from 'lucide-react';
+
+function useCountUp(target, duration = 900) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let start = null;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      setValue(target * progress);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+
+  return value;
+}
+
+function KPICard({ icon, label, value, suffix, trend, trendDirection, color }) {
+  const animatedValue = useCountUp(value);
+  const displayValue = Number.isInteger(value)
+    ? Math.round(animatedValue)
+    : animatedValue.toFixed(1);
 
   return (
-  <div className="kpi-cards">
-    <div className="kpi-card">
-      <h3>OEE</h3>
-      <p>{kpis.oee}%</p>
+    <div className="kpi-card" style={{ '--accent': color }}>
+      <div className="kpi-card-top">
+        <div className="kpi-icon">{icon}</div>
+        {trend !== undefined && (
+          <span className={`kpi-trend ${trendDirection}`}>
+            {trendDirection === 'up' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+            {trend}%
+          </span>
+        )}
+      </div>
+      <h3>{label}</h3>
+      <p>{displayValue}{suffix}</p>
     </div>
-    <div className="kpi-card">
-      <h3>Downtime</h3>
-      <p>{kpis.downtime}%</p>
+  );
+}
+
+function KPICards({ kpis }) {
+  return (
+    <div className="kpi-cards">
+      <KPICard
+        icon={<Gauge size={20} />}
+        label="OEE"
+        value={kpis.oee}
+        suffix="%"
+        trend={4.2}
+        trendDirection="up"
+        color="#00d9ff"
+      />
+      <KPICard
+        icon={<TimerOff size={20} />}
+        label="Downtime"
+        value={kpis.downtime}
+        suffix="%"
+        trend={1.8}
+        trendDirection="down"
+        color="#7c3aed"
+      />
+      <KPICard
+        icon={<AlertTriangle size={20} />}
+        label="Defect Rate"
+        value={kpis.defectRate}
+        suffix="%"
+        trend={0.6}
+        trendDirection="down"
+        color="#ff5555"
+      />
+      <KPICard
+        icon={<TrendingUp size={20} />}
+        label="Throughput"
+        value={kpis.throughput}
+        suffix="/hr"
+        trend={6.1}
+        trendDirection="up"
+        color="#3fb950"
+      />
     </div>
-    <div className="kpi-card">
-      <h3>Defect Rate</h3>
-      <p>{kpis.defectRate}%</p>
-    </div>
-    <div className="kpi-card">
-      <h3>Throughput</h3>
-      <p>{kpis.throughput}/hr</p>
-    </div>
-  </div>
-);
+  );
 }
 
 export default KPICards;

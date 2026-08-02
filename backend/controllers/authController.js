@@ -3,32 +3,37 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // REGISTER a new user
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 exports.register = async (req, res) => {
+  const { username, password, role } = req.body;
+
   try {
-    const { username, password, role } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+    const existing = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Username already taken' });
     }
 
-    // Check if username already exists
-    const existingUser = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    if (existingUser.rows.length > 0) {
-      return res.status(409).json({ error: 'Username already taken' });
-    }
-
-    // Hash the password before storing
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role, created_at',
+      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
       [username, hashedPassword, role || 'operator']
     );
 
-    res.status(201).json({ message: 'User registered successfully', user: result.rows[0] });
+    const user = result.rows[0];
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({ token, user });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Registration failed' });
   }
 };
 

@@ -156,6 +156,15 @@ body {
   text-align: center;
 }
 
+.login-hint a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.login-hint a:hover {
+  color: var(--accent-teal);
+}
+
 /* ---------- SIDEBAR ---------- */
 .sidebar {
   width: 230px;

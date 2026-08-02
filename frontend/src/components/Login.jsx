@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
@@ -50,6 +51,9 @@ function Login({ onLogin }) {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+          <p className="login-hint">
+  Don't have an account? <Link to="/register">Register here</Link>
+</p>
       </div>
     </div>
   );

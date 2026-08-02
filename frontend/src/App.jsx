@@ -13,6 +13,7 @@ import Dashboard3D from './components/Dashboard3D';
 import './App.css';
 import { api } from './api';
 import socket from './socket';
+import Register from './components/Register';
 
 function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
@@ -233,6 +234,7 @@ function App() {
           )}
         />
 
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

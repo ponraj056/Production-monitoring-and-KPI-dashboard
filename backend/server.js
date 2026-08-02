@@ -9,10 +9,6 @@ app.get('/', (req, res) => {
 });
 const PORT = process.env.PORT || 5000;
 
-const pool = require('./config/db');
-
-
-
 const machineRoutes = require('./routes/machineRoutes');
 const productionLogRoutes = require('./routes/productionLogRoutes');
 const downtimeLogRoutes = require('./routes/downtimeLogRoutes');

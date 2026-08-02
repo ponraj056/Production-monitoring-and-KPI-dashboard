@@ -11,7 +11,7 @@ import {
 
 function ProductionChart({ data }) {
   return (
-    <div style={{ width: '100%', height: 380 }}>
+    <div style={{ width: '100%', height: 'clamp(250px, 40vh, 400px)' }}>
       <ResponsiveContainer>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />

@@ -6,8 +6,8 @@
 
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f5f6fa;
-  color: #2d3436;
+  background: #0d1117;
+  color: #e6edf3;
 }
 
 /* ---------- LOGIN PAGE ---------- */
@@ -16,14 +16,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  background: radial-gradient(circle at top, #111827, #0d1117);
 }
 
 .login-card {
-  background: white;
+  background: #161b22;
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border-radius: 14px;
+  border: 1px solid #21262d;
+  box-shadow: 0 0 40px rgba(0, 200, 255, 0.08);
   width: 100%;
   max-width: 360px;
 }
@@ -31,42 +32,51 @@ body {
 .login-card h2 {
   margin-bottom: 24px;
   text-align: center;
-  color: #1e3c72;
+  color: #00d9ff;
+  letter-spacing: 1px;
 }
 
 .login-card input {
   width: 100%;
   padding: 12px;
   margin-bottom: 14px;
-  border: 1px solid #dcdde1;
+  background: #0d1117;
+  border: 1px solid #30363d;
   border-radius: 6px;
   font-size: 14px;
+  color: #e6edf3;
+}
+
+.login-card input::placeholder {
+  color: #6e7681;
 }
 
 .login-card input:focus {
   outline: none;
-  border-color: #2a5298;
+  border-color: #00d9ff;
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.15);
 }
 
 .login-card button {
   width: 100%;
   padding: 12px;
-  background: #2a5298;
-  color: white;
+  background: #00d9ff;
+  color: #0d1117;
   border: none;
   border-radius: 6px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .login-card button:hover {
-  background: #1e3c72;
+  background: #33e0ff;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
 }
 
 .login-error {
-  color: #e74c3c;
+  color: #ff5555;
   font-size: 13px;
   margin-bottom: 10px;
 }
@@ -74,110 +84,213 @@ body {
 .login-hint {
   margin-top: 16px;
   font-size: 12px;
-  color: #888;
+  color: #6e7681;
   text-align: center;
 }
 
-/* ---------- DASHBOARD ---------- */
+/* ---------- DASHBOARD LAYOUT ---------- */
 .dashboard-container {
-  padding: 30px 40px;
+  padding: 24px 36px 60px;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
-.dashboard-container h1 {
-  color: #1e3c72;
-  margin-bottom: 24px;
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  color: #e6edf3;
+  font-size: 24px;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-header .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d2818;
+  color: #3fb950;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #1a4a2e;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3fb950;
+  box-shadow: 0 0 8px #3fb950;
 }
 
 .dashboard-container h2 {
-  color: #2d3436;
-  margin: 30px 0 14px;
-  font-size: 18px;
-  border-left: 4px solid #2a5298;
-  padding-left: 10px;
+  color: #8b949e;
+  margin: 34px 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
-/* KPI Cards */
+/* ---------- KPI CARDS ---------- */
 .kpi-cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 .kpi-card {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  min-width: 160px;
-  flex: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  text-align: center;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: #00d9ff;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00d9ff, #7c3aed);
 }
 
 .kpi-card h3 {
-  font-size: 13px;
-  color: #888;
+  font-size: 12px;
+  color: #8b949e;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
 }
 
 .kpi-card p {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
-  color: #1e3c72;
+  color: #e6edf3;
 }
 
-/* Form */
+/* ---------- CHART PANEL ---------- */
+.chart-panel {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* ---------- FORM ---------- */
 .machine-form {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  padding: 16px;
+  border-radius: 12px;
 }
 
 .machine-form input {
-  padding: 10px;
-  border: 1px solid #dcdde1;
+  flex: 1;
+  padding: 10px 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
   border-radius: 6px;
   font-size: 14px;
+  color: #e6edf3;
+}
+
+.machine-form input:focus {
+  outline: none;
+  border-color: #00d9ff;
 }
 
 .machine-form button {
-  padding: 10px 20px;
-  background: #2a5298;
-  color: white;
+  padding: 10px 22px;
+  background: #00d9ff;
+  color: #0d1117;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  transition: all 0.2s;
 }
 
 .machine-form button:hover {
-  background: #1e3c72;
+  background: #33e0ff;
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
 }
 
-/* Table */
+/* ---------- TABLE ---------- */
 .machine-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 10px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .machine-table th {
-  background: #1e3c72;
-  color: white;
-  padding: 12px;
+  background: #0d1117;
+  color: #8b949e;
+  padding: 12px 16px;
   text-align: left;
-  font-size: 13px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #21262d;
 }
 
 .machine-table td {
-  padding: 12px;
-  border-bottom: 1px solid #f1f2f6;
+  padding: 14px 16px;
+  border-bottom: 1px solid #21262d;
   font-size: 14px;
+  color: #e6edf3;
 }
 
 .machine-table tr:last-child td {
   border-bottom: none;
+}
+
+.machine-table tr:hover {
+  background: #1c2128;
+}
+
+/* Status badges inside table */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-running {
+  background: #0d2818;
+  color: #3fb950;
+}
+
+.status-idle {
+  background: #2d2a0d;
+  color: #eac54f;
+}
+
+.status-down {
+  background: #2d0d0d;
+  color: #ff5555;
 }

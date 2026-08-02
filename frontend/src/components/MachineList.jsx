@@ -15,7 +15,9 @@ function MachineList({ machines }) {
             <td>{m.id}</td>
             <td>{m.name}</td>
             <td>{m.type}</td>
-            <td>{m.status}</td>
+            <td>
+  <span className={`status-badge status-${m.status}`}>{m.status}</span>
+</td>
           </tr>
         ))}
       </tbody>

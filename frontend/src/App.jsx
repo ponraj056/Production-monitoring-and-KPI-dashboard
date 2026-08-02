@@ -6,15 +6,18 @@ import MachineList from './components/MachineList';
 import MachineForm from './components/MachineForm';
 import KPICards from './components/KPICards';
 import ProductionChart from './components/ProductionChart';
-import './App.css';
 import DowntimeLogs from './components/DowntimeLogs';
 import Reports from './components/Reports';
 import ActivityFeed from './components/ActivityFeed';
+import Dashboard3D from './components/Dashboard3D';
+import './App.css';
 import { api } from './api';
 import socket from './socket';
+
 function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" style={{ position: 'relative' }}>
+      <Dashboard3D />
       <div className="dashboard-header">
         <h1>⚙ Production Monitoring Dashboard</h1>
         <span className="status-pill">
@@ -72,19 +75,32 @@ function ReportsPage({ machines, trendData }) {
   );
 }
 
-function AppLayout({ children, onLogout }) {
+function AppLayout({ children, onLogout, themeMode, toggleTheme }) {
   return (
     <div className="app-layout">
-      <Sidebar onLogout={onLogout} />
+      <Sidebar onLogout={onLogout} themeMode={themeMode} toggleTheme={toggleTheme} />
       <div className="main-content">{children}</div>
     </div>
   );
 }
 
 function App() {
-  // On load, check if a token already exists (keeps user logged in on refresh)
+  // ---------- AUTH ----------
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  // ---------- THEME ----------
+  const [themeMode, setThemeMode] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode);
+    localStorage.setItem('theme', themeMode);
+  }, [themeMode]);
+
+  const toggleTheme = () => {
+    setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // ---------- DATA STATE ----------
   const [machines, setMachines] = useState([]);
   const [kpis, setKpis] = useState({ oee: 0, downtime: 0, defectRate: 0, throughput: 0 });
   const [trendData, setTrendData] = useState([]);
@@ -97,7 +113,7 @@ function App() {
   ]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real data from backend once logged in
+  // ---------- FETCH REAL DATA ON LOGIN ----------
   useEffect(() => {
     if (!token) return;
 
@@ -119,7 +135,6 @@ function App() {
           throughput: kpiData.totalUnits,
         });
 
-        // Map production_logs rows into chart-friendly shape
         const chartData = logsData.map((log) => ({
           shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
           produced: log.units_produced,
@@ -136,10 +151,31 @@ function App() {
     fetchData();
   }, [token]);
 
+  // ---------- SOCKET.IO LIVE UPDATES ----------
+  useEffect(() => {
+    if (!token) return;
+
+    socket.on('machineCreated', (newMachine) => {
+      setMachines((prev) => [...prev, newMachine]);
+    });
+
+    socket.on('machineUpdated', (updatedMachine) => {
+      setMachines((prev) =>
+        prev.map((m) => (m.id === updatedMachine.id ? updatedMachine : m))
+      );
+    });
+
+    return () => {
+      socket.off('machineCreated');
+      socket.off('machineUpdated');
+    };
+  }, [token]);
+
+  // ---------- HANDLERS ----------
   const handleAddMachine = async (newMachine) => {
     try {
       const created = await api.createMachine(newMachine);
-      setMachines([...machines, created]);
+      setMachines((prev) => [...prev, created]);
     } catch (err) {
       console.error('Failed to create machine:', err);
       alert(err.message);
@@ -147,6 +183,7 @@ function App() {
   };
 
   const handleLogin = (newToken) => setToken(newToken);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -163,7 +200,7 @@ function App() {
         <Route
           path="/dashboard"
           element={requireAuth(
-            <AppLayout onLogout={handleLogout}>
+            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
               <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} />
             </AppLayout>
           )}
@@ -172,7 +209,7 @@ function App() {
         <Route
           path="/machines"
           element={requireAuth(
-            <AppLayout onLogout={handleLogout}>
+            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
               <MachinesPage machines={machines} handleAddMachine={handleAddMachine} loading={loading} />
             </AppLayout>
           )}
@@ -181,7 +218,7 @@ function App() {
         <Route
           path="/downtime"
           element={requireAuth(
-            <AppLayout onLogout={handleLogout}>
+            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
               <DowntimeLogsPage />
             </AppLayout>
           )}
@@ -190,7 +227,7 @@ function App() {
         <Route
           path="/reports"
           element={requireAuth(
-            <AppLayout onLogout={handleLogout}>
+            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
               <ReportsPage machines={machines} trendData={trendData} />
             </AppLayout>
           )}
@@ -200,26 +237,6 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-
-
-useEffect(() => {
-  if (!token) return;
-
-  socket.on('machineCreated', (newMachine) => {
-    setMachines((prev) => [...prev, newMachine]);
-  });
-
-  socket.on('machineUpdated', (updatedMachine) => {
-    setMachines((prev) =>
-      prev.map((m) => (m.id === updatedMachine.id ? updatedMachine : m))
-    );
-  });
-
-  // Cleanup: remove listeners when component unmounts or token changes
-  return () => {
-    socket.off('machineCreated');
-    socket.off('machineUpdated');
-  };
-}, [token]);
 }
+
 export default App;

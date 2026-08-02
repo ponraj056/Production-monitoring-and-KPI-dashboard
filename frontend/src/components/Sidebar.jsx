@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 
-function Sidebar({ onLogout }) {
+function Sidebar({ onLogout, themeMode, toggleTheme }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -16,19 +17,16 @@ function Sidebar({ onLogout }) {
       <div className="sidebar-logo">⚙ ProdMonitor</div>
 
       <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className={linkClass}>
-          📊 Dashboard
-        </NavLink>
-        <NavLink to="/machines" className={linkClass}>
-          🏭 Machines
-        </NavLink>
-        <NavLink to="/downtime" className={linkClass}>
-          ⏱ Downtime Logs
-        </NavLink>
-        <NavLink to="/reports" className={linkClass}>
-          📄 Reports
-        </NavLink>
+        <NavLink to="/dashboard" className={linkClass}>📊 Dashboard</NavLink>
+        <NavLink to="/machines" className={linkClass}>🏭 Machines</NavLink>
+        <NavLink to="/downtime" className={linkClass}>⏱ Downtime Logs</NavLink>
+        <NavLink to="/reports" className={linkClass}>📄 Reports</NavLink>
       </nav>
+
+      <button className="theme-toggle" onClick={toggleTheme}>
+        {themeMode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        {themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+      </button>
 
       <button className="sidebar-logout" onClick={handleLogout}>
         🚪 Logout

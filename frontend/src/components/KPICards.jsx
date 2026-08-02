@@ -51,7 +51,7 @@ function KPICards({ kpis }) {
         suffix="%"
         trend={4.2}
         trendDirection="up"
-        color="#00d9ff"
+       color="#723480"
       />
       <KPICard
         icon={<TimerOff size={20} />}
@@ -60,7 +60,7 @@ function KPICards({ kpis }) {
         suffix="%"
         trend={1.8}
         trendDirection="down"
-        color="#7c3aed"
+        color="#c77fd6"   
       />
       <KPICard
         icon={<AlertTriangle size={20} />}
@@ -69,7 +69,7 @@ function KPICards({ kpis }) {
         suffix="%"
         trend={0.6}
         trendDirection="down"
-        color="#ff5555"
+        color="#a9a94a"   
       />
       <KPICard
         icon={<TrendingUp size={20} />}
@@ -78,7 +78,7 @@ function KPICards({ kpis }) {
         suffix="/hr"
         trend={6.1}
         trendDirection="up"
-        color="#3fb950"
+        color="#DBD4FF"
       />
     </div>
   );

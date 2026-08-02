@@ -9,8 +9,9 @@ import ProductionChart from './components/ProductionChart';
 import './App.css';
 import DowntimeLogs from './components/DowntimeLogs';
 import Reports from './components/Reports';
+import ActivityFeed from './components/ActivityFeed';
 
-function DashboardPage({ kpis, trendData }) {
+function DashboardPage({ kpis, trendData, activities }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -27,9 +28,19 @@ function DashboardPage({ kpis, trendData }) {
       <div className="chart-panel">
         <ProductionChart data={trendData} />
       </div>
+
+      <h2>Recent Activity</h2>
+      <ActivityFeed activities={activities} />
     </div>
   );
 }
+const [activities] = useState([
+  { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
+  { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },
+  { id: 3, type: 'maintenance', text: 'Scheduled maintenance started on CNC Machine 1', time: '1 hour ago' },
+  { id: 4, type: 'error', text: '3 defective units flagged on Press Machine 2', time: '2 hours ago' },
+  { id: 5, type: 'added', text: 'New machine "Welding Unit 3" registered', time: '5 hours ago' },
+]);
 
 function MachinesPage({ machines, handleAddMachine }) {
   return (
@@ -117,7 +128,7 @@ function App() {
           path="/dashboard"
           element={requireAuth(
             <AppLayout onLogout={handleLogout}>
-              <DashboardPage kpis={kpis} trendData={trendData} />
+             <DashboardPage kpis={kpis} trendData={trendData} activities={activities} />
             </AppLayout>
           )}
         />

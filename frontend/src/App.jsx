@@ -11,7 +11,7 @@ import DowntimeLogs from './components/DowntimeLogs';
 import Reports from './components/Reports';
 import ActivityFeed from './components/ActivityFeed';
 import { api } from './api';
-
+import socket from './socket';
 function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
     <div className="dashboard-container">
@@ -200,6 +200,26 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-}
 
+
+useEffect(() => {
+  if (!token) return;
+
+  socket.on('machineCreated', (newMachine) => {
+    setMachines((prev) => [...prev, newMachine]);
+  });
+
+  socket.on('machineUpdated', (updatedMachine) => {
+    setMachines((prev) =>
+      prev.map((m) => (m.id === updatedMachine.id ? updatedMachine : m))
+    );
+  });
+
+  // Cleanup: remove listeners when component unmounts or token changes
+  return () => {
+    socket.off('machineCreated');
+    socket.off('machineUpdated');
+  };
+}, [token]);
+}
 export default App;

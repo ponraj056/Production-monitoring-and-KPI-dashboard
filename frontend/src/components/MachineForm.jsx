@@ -2,22 +2,23 @@ import { useState } from 'react';
 
 function MachineForm({ onAddMachine }) {
   const [name, setName] = useState('');
-  const [type, setType] = useState('');
+  const [lineId, setLineId] = useState('');
+  const [status, setStatus] = useState('idle');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !type) return;
+    if (!name || !lineId) return;
 
     const newMachine = {
-      id: Date.now(),
       name,
-      type,
-      status: 'idle',
+      line_id: lineId,
+      status,
     };
 
     onAddMachine(newMachine);
     setName('');
-    setType('');
+    setLineId('');
+    setStatus('idle');
   };
 
   return (
@@ -28,10 +29,15 @@ function MachineForm({ onAddMachine }) {
         onChange={(e) => setName(e.target.value)}
       />
       <input
-        placeholder="Machine type"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
+        placeholder="Line ID (e.g. Line-A)"
+        value={lineId}
+        onChange={(e) => setLineId(e.target.value)}
       />
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <option value="idle">Idle</option>
+        <option value="running">Running</option>
+        <option value="down">Down</option>
+      </select>
       <button type="submit">Add Machine</button>
     </form>
   );

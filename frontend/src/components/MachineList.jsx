@@ -5,7 +5,7 @@ function MachineList({ machines }) {
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Type</th>
+          <th>Line</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -14,10 +14,10 @@ function MachineList({ machines }) {
           <tr key={m.id}>
             <td>{m.id}</td>
             <td>{m.name}</td>
-            <td>{m.type}</td>
+            <td>{m.line_id}</td>
             <td>
-  <span className={`status-badge status-${m.status}`}>{m.status}</span>
-</td>
+              <span className={`status-badge status-${m.status}`}>{m.status}</span>
+            </td>
           </tr>
         ))}
       </tbody>

@@ -21,7 +21,7 @@ function MachineForm({ onAddMachine }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="machine-form">
       <input
         placeholder="Machine name"
         value={name}

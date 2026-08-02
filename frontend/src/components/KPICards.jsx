@@ -11,25 +11,25 @@ function KPICards({ kpis }) {
   };
 
   return (
-    <div>
-      <div style={cardStyle}>
-        <h3>OEE</h3>
-        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{kpis.oee}%</p>
-      </div>
-      <div style={cardStyle}>
-        <h3>Downtime</h3>
-        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{kpis.downtime}%</p>
-      </div>
-      <div style={cardStyle}>
-        <h3>Defect Rate</h3>
-        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{kpis.defectRate}%</p>
-      </div>
-      <div style={cardStyle}>
-        <h3>Throughput</h3>
-        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{kpis.throughput}/hr</p>
-      </div>
+  <div className="kpi-cards">
+    <div className="kpi-card">
+      <h3>OEE</h3>
+      <p>{kpis.oee}%</p>
     </div>
-  );
+    <div className="kpi-card">
+      <h3>Downtime</h3>
+      <p>{kpis.downtime}%</p>
+    </div>
+    <div className="kpi-card">
+      <h3>Defect Rate</h3>
+      <p>{kpis.defectRate}%</p>
+    </div>
+    <div className="kpi-card">
+      <h3>Throughput</h3>
+      <p>{kpis.throughput}/hr</p>
+    </div>
+  </div>
+);
 }
 
 export default KPICards;

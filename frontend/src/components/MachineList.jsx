@@ -1,6 +1,6 @@
 function MachineList({ machines }) {
   return (
-    <table border="1" cellPadding="8" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
+    <table className="machine-table">
       <thead>
         <tr>
           <th>ID</th>

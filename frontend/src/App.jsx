@@ -9,7 +9,7 @@ import './App.css';
 
 function Dashboard({ machines, kpis, trendData, handleAddMachine }) {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+    <div className="dashboard-container">
       <h1>Production Monitoring Dashboard</h1>
 
       <h2>Key Metrics</h2>

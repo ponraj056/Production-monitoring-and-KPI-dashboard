@@ -1,6 +1,6 @@
 function MachineList({ machines }) {
   return (
-    <table border="1" cellPadding="8" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
+    <table className="machine-table">
       <thead>
         <tr>
           <th>ID</th>
@@ -15,7 +15,9 @@ function MachineList({ machines }) {
             <td>{m.id}</td>
             <td>{m.name}</td>
             <td>{m.type}</td>
-            <td>{m.status}</td>
+            <td>
+  <span className={`status-badge status-${m.status}`}>{m.status}</span>
+</td>
           </tr>
         ))}
       </tbody>

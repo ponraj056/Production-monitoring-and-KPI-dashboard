@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   background: #0d1117;
   color: #e6edf3;
 }
@@ -448,4 +448,48 @@ body {
     overflow-x: auto;
     white-space: nowrap;
   }
+}
+
+/* ---------- KPI CARD UPGRADES ---------- */
+.kpi-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+.kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.kpi-trend.up {
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.12);
+}
+
+.kpi-trend.down {
+  color: #ff5555;
+  background: rgba(255, 85, 85, 0.12);
+}
+
+.kpi-card::before {
+  background: var(--accent) !important;
+  box-shadow: 0 0 12px var(--accent);
 }

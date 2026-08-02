@@ -32,6 +32,11 @@ exports.createMachine = async (req, res) => {
       'INSERT INTO machines (name, status, line_id) VALUES ($1, $2, $3) RETURNING *',
       [name, status || 'idle', line_id]
     );
+
+    // Emit real-time event to all connected clients
+    const io = req.app.get('io');
+    io.emit('machineCreated', result.rows[0]);
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -50,6 +55,11 @@ exports.updateMachine = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }
+
+    // Emit real-time event
+    const io = req.app.get('io');
+    io.emit('machineUpdated', result.rows[0]);
+
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

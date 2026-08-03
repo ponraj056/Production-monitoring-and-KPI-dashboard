@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -9,6 +9,7 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,10 +18,10 @@ function Login({ onLogin }) {
 
     try {
       const data = await api.login(username, password);
-      // Store token so it persists across page refreshes
-      localStorage.setItem('token', data.token);
+      // AuthContext.login() stores the token AND decodes the role for us
+      login(data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      onLogin(data.token);
+      onLogin(data.token); // updates App's token state so routes unlock
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Invalid username or password');
@@ -51,9 +52,9 @@ function Login({ onLogin }) {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-          <p className="login-hint">
-  Don't have an account? <Link to="/register">Register here</Link>
-</p>
+        <p className="login-hint">
+          Don't have an account? <Link to="/register">Register here</Link>
+        </p>
       </div>
     </div>
   );

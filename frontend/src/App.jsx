@@ -14,6 +14,7 @@ import './App.css';
 import { api } from './api';
 import socket from './socket';
 import Register from './components/Register';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
@@ -40,16 +41,29 @@ function DashboardPage({ kpis, trendData, activities, loading }) {
   );
 }
 
-function MachinesPage({ machines, handleAddMachine, loading }) {
+function MachinesPage({ machines, handleAddMachine, handleDeleteMachine, loading }) {
+  const { hasRole } = useAuth();
+  const canEdit = hasRole('admin', 'supervisor');
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>🏭 Machines</h1>
       </div>
-      <h2>Add Machine</h2>
-      <MachineForm onAddMachine={handleAddMachine} />
+
+      {canEdit && (
+        <>
+          <h2>Add Machine</h2>
+          <MachineForm onAddMachine={handleAddMachine} />
+        </>
+      )}
+
       <h2>All Machines</h2>
-      {loading ? <p>Loading machines...</p> : <MachineList machines={machines} />}
+      {loading ? (
+        <p>Loading machines...</p>
+      ) : (
+        <MachineList machines={machines} canEdit={canEdit} onDelete={handleDeleteMachine} />
+      )}
     </div>
   );
 }
@@ -85,7 +99,7 @@ function AppLayout({ children, onLogout, themeMode, toggleTheme }) {
   );
 }
 
-function App() {
+function AppRoutes() {
   // ---------- AUTH ----------
   const [token, setToken] = useState(localStorage.getItem('token'));
 
@@ -183,6 +197,16 @@ function App() {
     }
   };
 
+  const handleDeleteMachine = async (id) => {
+    try {
+      await api.deleteMachine(id);
+      setMachines((prev) => prev.filter((m) => m.id !== id));
+    } catch (err) {
+      console.error('Failed to delete machine:', err);
+      alert(err.message);
+    }
+  };
+
   const handleLogin = (newToken) => setToken(newToken);
 
   const handleLogout = () => {
@@ -194,50 +218,58 @@ function App() {
   const requireAuth = (element) => (token ? element : <Navigate to="/login" />);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+    <Routes>
+      <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
-        <Route
-          path="/dashboard"
-          element={requireAuth(
-            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-              <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} />
-            </AppLayout>
-          )}
-        />
+      <Route
+        path="/dashboard"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} />
+          </AppLayout>
+        )}
+      />
 
-        <Route
-          path="/machines"
-          element={requireAuth(
-            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-              <MachinesPage machines={machines} handleAddMachine={handleAddMachine} loading={loading} />
-            </AppLayout>
-          )}
-        />
+      <Route
+        path="/machines"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <MachinesPage machines={machines} handleAddMachine={handleAddMachine} handleDeleteMachine={handleDeleteMachine} loading={loading} />
+          </AppLayout>
+        )}
+      />
 
-        <Route
-          path="/downtime"
-          element={requireAuth(
-            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-              <DowntimeLogsPage />
-            </AppLayout>
-          )}
-        />
+      <Route
+        path="/downtime"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <DowntimeLogsPage />
+          </AppLayout>
+        )}
+      />
 
-        <Route
-          path="/reports"
-          element={requireAuth(
-            <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-              <ReportsPage machines={machines} trendData={trendData} />
-            </AppLayout>
-          )}
-        />
+      <Route
+        path="/reports"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <ReportsPage machines={machines} trendData={trendData} />
+          </AppLayout>
+        )}
+      />
 
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+      <Route path="/register" element={<Register />} />
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

@@ -1,17 +1,42 @@
 import { Download, FileText } from 'lucide-react';
+import { useState } from 'react';
 
 function Reports({ machines, trendData }) {
-  const exportCSV = () => {
-    const headers = 'Shift,Produced,Defects\n';
-    const rows = trendData.map(d => `${d.shift},${d.produced},${d.defects}`).join('\n');
-    const csv = headers + rows;
+  const today = new Date().toISOString().split('T')[0];
+  const [fromDate, setFromDate] = useState(today);
+  const [toDate, setToDate] = useState(today);
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'production_report.csv';
-    a.click();
+  const exportCSV = async () => {
+    if (!fromDate || !toDate) {
+      alert('Please select both from and to dates');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/reports/export?from=${fromDate}&to=${toDate}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `production_report_${fromDate}_to_${toDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      alert('Failed to export CSV');
+    }
   };
 
   return (
@@ -25,10 +50,15 @@ function Reports({ machines, trendData }) {
               <p style={{ fontSize: '13px', color: '#8b949e' }}>{trendData.length} shift records · {machines.length} machines</p>
             </div>
           </div>
-          <button className="sidebar-logout" style={{ color: '#00d9ff', borderColor: '#00d9ff' }} onClick={exportCSV}>
-            <Download size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-            Export CSV
-          </button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff' }} />
+            <span>to</span>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff' }} />
+            <button className="sidebar-logout" style={{ color: '#00d9ff', borderColor: '#00d9ff' }} onClick={exportCSV}>
+              <Download size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 

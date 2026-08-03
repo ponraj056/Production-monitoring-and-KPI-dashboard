@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 function DowntimeLogs() {
+  const { hasRole } = useAuth();
+  const canEdit = hasRole('admin', 'supervisor');
   const [logs, setLogs] = useState([]);
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,35 +66,37 @@ function DowntimeLogs() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="machine-form">
-        <select
-          value={form.machine_id}
-          onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
-        >
-          <option value="">Select machine</option>
-          {machines.map((m) => (
-            <option key={m.id} value={m.id}>{m.name}</option>
-          ))}
-        </select>
-        <input
-          placeholder="Reason"
-          value={form.reason}
-          onChange={(e) => setForm({ ...form, reason: e.target.value })}
-        />
-        <input
-          type="time"
-          value={form.start}
-          onChange={(e) => setForm({ ...form, start: e.target.value })}
-        />
-        <input
-          type="time"
-          value={form.end}
-          onChange={(e) => setForm({ ...form, end: e.target.value })}
-        />
-        <button type="submit">
-          <Plus size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} />Log Downtime
-        </button>
-      </form>
+      {canEdit && (
+        <form onSubmit={handleSubmit} className="machine-form">
+          <select
+            value={form.machine_id}
+            onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
+          >
+            <option value="">Select machine</option>
+            {machines.map((m) => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <input
+            placeholder="Reason"
+            value={form.reason}
+            onChange={(e) => setForm({ ...form, reason: e.target.value })}
+          />
+          <input
+            type="time"
+            value={form.start}
+            onChange={(e) => setForm({ ...form, start: e.target.value })}
+          />
+          <input
+            type="time"
+            value={form.end}
+            onChange={(e) => setForm({ ...form, end: e.target.value })}
+          />
+          <button type="submit">
+            <Plus size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} />Log Downtime
+          </button>
+        </form>
+      )}
 
       {loading ? (
         <p>Loading downtime logs...</p>

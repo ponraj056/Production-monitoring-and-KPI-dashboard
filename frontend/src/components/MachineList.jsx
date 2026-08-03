@@ -1,4 +1,6 @@
-function MachineList({ machines }) {
+import { Trash2 } from 'lucide-react';
+
+function MachineList({ machines, canEdit, onDelete }) {
   return (
     <table className="machine-table">
       <thead>
@@ -7,6 +9,7 @@ function MachineList({ machines }) {
           <th>Name</th>
           <th>Line</th>
           <th>Status</th>
+          {canEdit && <th>Actions</th>}
         </tr>
       </thead>
       <tbody>
@@ -18,6 +21,17 @@ function MachineList({ machines }) {
             <td>
               <span className={`status-badge status-${m.status}`}>{m.status}</span>
             </td>
+            {canEdit && (
+              <td>
+                <button
+                  onClick={() => onDelete(m.id)}
+                  title="Delete Machine"
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-danger)', cursor: 'pointer' }}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </td>
+            )}
           </tr>
         ))}
       </tbody>
@@ -25,4 +39,4 @@ function MachineList({ machines }) {
   );
 }
 
-export default MachineList;
+export default MachineList;

@@ -1,8 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 function Sidebar({ onLogout, themeMode, toggleTheme }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleLogout = () => {
     onLogout();
@@ -15,6 +17,18 @@ function Sidebar({ onLogout, themeMode, toggleTheme }) {
   return (
     <div className="sidebar">
       <div className="sidebar-logo">⚙ ProdMonitor</div>
+
+      {user && (
+        <div className="user-role-badge">
+          <span className="user-name">{user.username}</span>
+          <span
+            className={`role-tag role-${user.role}`}
+            style={user.role === 'operator' ? { backgroundColor: 'var(--accent-primary)' } : {}}
+          >
+            {user.role === 'operator' ? 'operator (read-only)' : user.role}
+          </span>
+        </div>
+      )}
 
       <nav className="sidebar-nav">
         <NavLink to="/dashboard" className={linkClass}>📊 Dashboard</NavLink>

@@ -24,6 +24,65 @@ exports.getMachineById = async (req, res) => {
   }
 };
 
+// GET single machine with full stats
+exports.getMachineStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Fetch machine details
+    const machineResult = await pool.query('SELECT * FROM machines WHERE id = $1', [id]);
+    if (machineResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Machine not found' });
+    }
+    const machine = machineResult.rows[0];
+
+    // 2. Fetch production logs
+    const productionResult = await pool.query(
+      'SELECT * FROM production_logs WHERE machine_id = $1 ORDER BY logged_at DESC', 
+      [id]
+    );
+    const productionLogs = productionResult.rows;
+
+    let totalUnits = 0;
+    let totalDefects = 0;
+    productionLogs.forEach(log => {
+      totalUnits += log.units_produced;
+      totalDefects += log.defective_units;
+    });
+
+    // 3. Fetch downtime logs
+    const downtimeResult = await pool.query(
+      'SELECT * FROM downtime_logs WHERE machine_id = $1 ORDER BY logged_at DESC', 
+      [id]
+    );
+    const downtimeLogs = downtimeResult.rows;
+
+    let totalDowntime = 0;
+    downtimeLogs.forEach(log => {
+      totalDowntime += log.downtime_minutes;
+    });
+
+    const defectRate = totalUnits > 0 ? ((totalDefects / totalUnits) * 100).toFixed(1) : 0;
+    const availability = Math.max(0, 100 - (totalDowntime / 480 * 100)); 
+    const quality = totalUnits > 0 ? ((totalUnits - totalDefects) / totalUnits * 100) : 0;
+    const oee = Math.round((availability * quality) / 100) || 0;
+
+    res.json({
+      machine,
+      kpis: {
+        oee,
+        downtime: totalDowntime, // specific to machine
+        defectRate,
+        throughput: totalUnits
+      },
+      productionLogs,
+      downtimeLogs
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // CREATE new machine
 exports.createMachine = async (req, res) => {
   try {

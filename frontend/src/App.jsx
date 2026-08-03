@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Sidebar from './components/Sidebar';
 import MachineList from './components/MachineList';
 import MachineForm from './components/MachineForm';
+import MachineDetails from './components/MachineDetails';
 import KPICards from './components/KPICards';
 import ProductionChart from './components/ProductionChart';
 import DowntimeLogs from './components/DowntimeLogs';
@@ -244,6 +245,15 @@ function AppRoutes() {
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
             <MachinesPage machines={machines} handleAddMachine={handleAddMachine} handleDeleteMachine={handleDeleteMachine} loading={loading} />
+          </AppLayout>
+        )}
+      />
+
+      <Route
+        path="/machines/:id"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <MachineDetails />
           </AppLayout>
         )}
       />

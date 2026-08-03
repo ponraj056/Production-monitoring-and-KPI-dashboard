@@ -42,6 +42,7 @@ export const api = {
 
   // Machines
   getMachines: () => apiRequest('/machines'),
+  getMachineStats: (id) => apiRequest(`/machines/${id}/stats`),
   createMachine: (machine) =>
     apiRequest('/machines', {
       method: 'POST',

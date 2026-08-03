@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 function MachineList({ machines, canEdit, onDelete }) {
   return (
     <table className="machine-table">
@@ -16,7 +16,7 @@ function MachineList({ machines, canEdit, onDelete }) {
         {machines.map((m) => (
           <tr key={m.id}>
             <td>{m.id}</td>
-            <td>{m.name}</td>
+            <td><Link to={`/machines/${m.id}`} style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>{m.name}</Link></td>
             <td>{m.line_id}</td>
             <td>
               <span className={`status-badge status-${m.status}`}>{m.status}</span>

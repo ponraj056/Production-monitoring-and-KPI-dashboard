@@ -7,6 +7,7 @@ const { requireRole } = require('../middleware/roleCheck');
 // Everyone (operator, supervisor, admin) can view
 router.get('/', authenticateToken, machineController.getAllMachines);
 router.get('/:id', authenticateToken, machineController.getMachineById);
+router.get('/:id/stats', authenticateToken, machineController.getMachineStats);
 
 // Only supervisor/admin can write
 router.post('/', authenticateToken, requireRole('admin', 'supervisor'), machineController.createMachine);

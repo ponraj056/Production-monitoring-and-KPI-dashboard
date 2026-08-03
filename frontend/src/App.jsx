@@ -14,6 +14,7 @@ import './App.css';
 import { api } from './api';
 import socket from './socket';
 import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function DashboardPage({ kpis, trendData, activities, loading }) {
@@ -258,6 +259,7 @@ function AppRoutes() {
       />
 
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

@@ -19,10 +19,40 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
+import { AlertTriangle, X } from 'lucide-react';
 
-function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTimeRange }) {
+function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTimeRange, predictions }) {
+  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+
+  const handleDismiss = (machineId) => {
+    setDismissedAlerts(new Set([...dismissedAlerts, machineId]));
+  };
+
+  const highRiskMachines = (predictions || []).filter(p => p.risk_level === 'high' && !dismissedAlerts.has(p.machine_id));
+
   return (
     <div className="dashboard-container" style={{ position: 'relative' }}>
+      {highRiskMachines.map(machine => (
+        <div key={machine.machine_id} style={{
+          backgroundColor: 'var(--accent-danger)',
+          color: '#fff',
+          padding: '1rem',
+          borderRadius: 'var(--radius)',
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 4px 12px rgba(220, 53, 69, 0.3)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertTriangle size={20} />
+            <span><strong>High Risk Alert:</strong> Machine <strong>{machine.machine_name}</strong> has a {machine.risk_score}% probability of downtime. Preventive maintenance recommended.</span>
+          </div>
+          <button onClick={() => handleDismiss(machine.machine_id)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
+            <X size={20} />
+          </button>
+        </div>
+      ))}
       <Dashboard3D />
       <div className="dashboard-header">
         <h1>⚙ Production Monitoring Dashboard</h1>
@@ -53,7 +83,7 @@ function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTim
   );
 }
 
-function MachinesPage({ machines, handleAddMachine, handleDeleteMachine, loading }) {
+function MachinesPage({ machines, handleAddMachine, handleDeleteMachine, loading, predictions }) {
   const { hasRole } = useAuth();
   const canEdit = hasRole('admin', 'supervisor');
 
@@ -74,7 +104,7 @@ function MachinesPage({ machines, handleAddMachine, handleDeleteMachine, loading
       {loading ? (
         <p>Loading machines...</p>
       ) : (
-        <MachineList machines={machines} canEdit={canEdit} onDelete={handleDeleteMachine} />
+        <MachineList machines={machines} canEdit={canEdit} onDelete={handleDeleteMachine} predictions={predictions} />
       )}
     </div>
   );
@@ -139,6 +169,7 @@ function AppRoutes() {
     { id: 5, type: 'added', text: 'New machine "Welding Unit 3" registered', time: '5 hours ago' },
   ]);
   const [loading, setLoading] = useState(true);
+  const [predictions, setPredictions] = useState([]);
 
   // ---------- TIME RANGE ----------
   const [timeRange, setTimeRange] = useState('all');
@@ -149,13 +180,15 @@ function AppRoutes() {
     if (showLoading) setLoading(true);
     
     try {
-      const [machinesData, kpiData, logsData] = await Promise.all([
+      const [machinesData, kpiData, logsData, predictionsData] = await Promise.all([
         api.getMachines(),
         api.getKpiSummary(null, timeRange),
         api.getProductionLogs(timeRange),
+        api.getDowntimeRisk(),
       ]);
 
       setMachines(machinesData);
+      setPredictions(predictionsData);
 
       setKpis({
         oee: kpiData.oee,
@@ -195,18 +228,21 @@ function AppRoutes() {
       );
     });
 
-    socket.on('dashboardUpdate', (payload) => {
+    const handleUpdate = (payload) => {
       console.log('Live dashboard update received:', payload);
-      // Fetch data silently in the background
       fetchDashboardData(false);
-    });
+    };
+    
+    socket.on('dashboardUpdate', handleUpdate);
+    socket.on('predictionsUpdated', handleUpdate);
 
     return () => {
       socket.off('machineCreated');
       socket.off('machineUpdated');
-      socket.off('dashboardUpdate');
+      socket.off('dashboardUpdate', handleUpdate);
+      socket.off('predictionsUpdated', handleUpdate);
     };
-  }, [token]);
+  }, [token, timeRange]);
 
   // ---------- HANDLERS ----------
   const handleAddMachine = async (newMachine) => {
@@ -247,7 +283,7 @@ function AppRoutes() {
         path="/dashboard"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} />
+            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} predictions={predictions} />
           </AppLayout>
         )}
       />
@@ -256,7 +292,13 @@ function AppRoutes() {
         path="/machines"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <MachinesPage machines={machines} handleAddMachine={handleAddMachine} handleDeleteMachine={handleDeleteMachine} loading={loading} />
+            <MachinesPage
+              machines={machines}
+              handleAddMachine={handleAddMachine}
+              handleDeleteMachine={handleDeleteMachine}
+              loading={loading}
+              predictions={predictions}
+            />
           </AppLayout>
         )}
       />

@@ -88,4 +88,7 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ status: 'completed' }),
     }),
+
+  // Predictions
+  getDowntimeRisk: () => apiRequest('/predictions/downtime-risk'),
 };

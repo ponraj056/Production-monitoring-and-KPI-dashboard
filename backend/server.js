@@ -41,6 +41,8 @@ app.use('/api/reports', reportsRoutes);
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
+const { startSimulator } = require('./simulator');
+
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
@@ -48,6 +50,8 @@ io.on('connection', (socket) => {
     console.log('Client disconnected:', socket.id);
   });
 });
+
+startSimulator(io);
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

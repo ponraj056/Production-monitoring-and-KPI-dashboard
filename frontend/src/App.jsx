@@ -130,41 +130,41 @@ function AppRoutes() {
   const [loading, setLoading] = useState(true);
 
   // ---------- FETCH REAL DATA ON LOGIN ----------
-  useEffect(() => {
+  const fetchDashboardData = async (showLoading = true) => {
     if (!token) return;
+    if (showLoading) setLoading(true);
+    
+    try {
+      const [machinesData, kpiData, logsData] = await Promise.all([
+        api.getMachines(),
+        api.getKpiSummary(),
+        api.getProductionLogs(),
+      ]);
 
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [machinesData, kpiData, logsData] = await Promise.all([
-          api.getMachines(),
-          api.getKpiSummary(),
-          api.getProductionLogs(),
-        ]);
+      setMachines(machinesData);
 
-        setMachines(machinesData);
+      setKpis({
+        oee: kpiData.oee,
+        downtime: kpiData.downtimePercent,
+        defectRate: kpiData.defectRate,
+        throughput: kpiData.totalUnits,
+      });
 
-        setKpis({
-          oee: kpiData.oee,
-          downtime: kpiData.downtimePercent,
-          defectRate: kpiData.defectRate,
-          throughput: kpiData.totalUnits,
-        });
+      const chartData = logsData.map((log) => ({
+        shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
+        produced: log.units_produced,
+        defects: log.defective_units,
+      }));
+      setTrendData(chartData);
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
 
-        const chartData = logsData.map((log) => ({
-          shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
-          produced: log.units_produced,
-          defects: log.defective_units,
-        }));
-        setTrendData(chartData);
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+  useEffect(() => {
+    fetchDashboardData();
   }, [token]);
 
   // ---------- SOCKET.IO LIVE UPDATES ----------
@@ -181,9 +181,16 @@ function AppRoutes() {
       );
     });
 
+    socket.on('dashboardUpdate', (payload) => {
+      console.log('Live dashboard update received:', payload);
+      // Fetch data silently in the background
+      fetchDashboardData(false);
+    });
+
     return () => {
       socket.off('machineCreated');
       socket.off('machineUpdated');
+      socket.off('dashboardUpdate');
     };
   }, [token]);
 

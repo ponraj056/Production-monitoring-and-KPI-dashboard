@@ -34,6 +34,7 @@ function Sidebar({ onLogout, themeMode, toggleTheme }) {
         <NavLink to="/dashboard" className={linkClass}>📊 Dashboard</NavLink>
         <NavLink to="/machines" className={linkClass}>🏭 Machines</NavLink>
         <NavLink to="/downtime" className={linkClass}>⏱ Downtime Logs</NavLink>
+        <NavLink to="/maintenance" className={linkClass}>🔧 Maintenance</NavLink>
         <NavLink to="/reports" className={linkClass}>📄 Reports</NavLink>
       </nav>
 

@@ -8,6 +8,7 @@ import MachineDetails from './components/MachineDetails';
 import KPICards from './components/KPICards';
 import ProductionChart from './components/ProductionChart';
 import DowntimeLogs from './components/DowntimeLogs';
+import Maintenance from './components/Maintenance';
 import Reports from './components/Reports';
 import ActivityFeed from './components/ActivityFeed';
 import Dashboard3D from './components/Dashboard3D';
@@ -274,6 +275,15 @@ function AppRoutes() {
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
             <DowntimeLogsPage />
+          </AppLayout>
+        )}
+      />
+
+      <Route
+        path="/maintenance"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <Maintenance />
           </AppLayout>
         )}
       />

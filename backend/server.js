@@ -29,12 +29,14 @@ const productionLogRoutes = require('./routes/productionLogRoutes');
 const downtimeLogRoutes = require('./routes/downtimeLogRoutes');
 const kpiRoutes = require('./routes/kpiRoutes');
 const authRoutes = require('./routes/authRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const reportsRoutes = require('./routes/reportsRoutes');
 
 app.use('/api/machines', machineRoutes);
 app.use('/api/production-logs', productionLogRoutes);
 app.use('/api/downtime-logs', downtimeLogRoutes);
 app.use('/api/kpi', kpiRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportsRoutes);
 

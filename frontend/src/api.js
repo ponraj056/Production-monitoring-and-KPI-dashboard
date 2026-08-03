@@ -75,4 +75,17 @@ export const api = {
   // KPI
   getKpiSummary: (machineId, timeRange = 'all') =>
     apiRequest(`/kpi?timeRange=${timeRange}${machineId ? `&machine_id=${machineId}` : ''}`),
+
+  // Maintenance
+  getSchedules: () => apiRequest('/maintenance'),
+  createSchedule: (schedule) =>
+    apiRequest('/maintenance', {
+      method: 'POST',
+      body: JSON.stringify(schedule),
+    }),
+  completeSchedule: (id) =>
+    apiRequest(`/maintenance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'completed' }),
+    }),
 };

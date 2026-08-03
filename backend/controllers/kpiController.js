@@ -1,15 +1,18 @@
 const pool = require('../config/db');
+const { getTimeFilter } = require('../utils/dateFilter');
 
 const PLANNED_SHIFT_MINUTES = 480; // 8-hour shift, adjust as needed
 const TARGET_OUTPUT_PER_SHIFT = 200; // ideal units per shift, adjust as needed
 
 exports.getKpiSummary = async (req, res) => {
   try {
-    const { machine_id } = req.query;
+    const { machine_id, timeRange } = req.query;
 
-    // Build WHERE clause dynamically if machine_id is provided
-    const machineFilter = machine_id ? 'WHERE machine_id = $1' : '';
-    const params = machine_id ? [machine_id] : [];
+    const hasMachine = !!machine_id;
+    const machineFilter = hasMachine ? 'WHERE machine_id = $1' : '';
+    const dateFilterStr = getTimeFilter(timeRange, hasMachine);
+    const filterSql = machineFilter + dateFilterStr;
+    const params = hasMachine ? [machine_id] : [];
 
     // Aggregate production data
     const productionResult = await pool.query(
@@ -17,14 +20,14 @@ exports.getKpiSummary = async (req, res) => {
         COALESCE(SUM(units_produced), 0) AS total_units,
         COALESCE(SUM(defective_units), 0) AS total_defects,
         COUNT(*) AS total_shifts
-       FROM production_logs ${machineFilter}`,
+       FROM production_logs ${filterSql}`,
       params
     );
 
     // Aggregate downtime data
     const downtimeResult = await pool.query(
       `SELECT COALESCE(SUM(downtime_minutes), 0) AS total_downtime
-       FROM downtime_logs ${machineFilter}`,
+       FROM downtime_logs ${filterSql}`,
       params
     );
 

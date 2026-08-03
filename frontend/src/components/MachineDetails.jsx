@@ -11,11 +11,12 @@ function MachineDetails() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('all');
 
   const fetchData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const stats = await api.getMachineStats(id);
+      const stats = await api.getMachineStats(id, timeRange);
       setData(stats);
     } catch (err) {
       console.error(err);
@@ -34,7 +35,7 @@ function MachineDetails() {
 
     socket.on('dashboardUpdate', handleUpdate);
     return () => socket.off('dashboardUpdate', handleUpdate);
-  }, [id]);
+  }, [id, timeRange]);
 
   if (loading) {
     return <div className="dashboard-container"><p>Loading Machine Data...</p></div>;
@@ -61,9 +62,17 @@ function MachineDetails() {
           </Link>
           <h1>{machine.name} Dashboard</h1>
         </div>
-        <span className="status-pill">
-          <span className="status-dot"></span> Live
-        </span>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
+          <span className="status-pill">
+            <span className="status-dot"></span> Live
+          </span>
+        </div>
       </div>
 
       <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>

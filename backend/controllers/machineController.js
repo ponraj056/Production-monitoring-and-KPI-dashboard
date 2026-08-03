@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { getTimeFilter } = require('../utils/dateFilter');
 
 // GET all machines
 exports.getAllMachines = async (req, res) => {
@@ -28,6 +29,8 @@ exports.getMachineById = async (req, res) => {
 exports.getMachineStats = async (req, res) => {
   try {
     const { id } = req.params;
+    const { timeRange } = req.query;
+    const dateFilterStr = getTimeFilter(timeRange, true);
 
     // 1. Fetch machine details
     const machineResult = await pool.query('SELECT * FROM machines WHERE id = $1', [id]);
@@ -38,7 +41,7 @@ exports.getMachineStats = async (req, res) => {
 
     // 2. Fetch production logs
     const productionResult = await pool.query(
-      'SELECT * FROM production_logs WHERE machine_id = $1 ORDER BY logged_at DESC', 
+      `SELECT * FROM production_logs WHERE machine_id = $1 ${dateFilterStr} ORDER BY logged_at DESC`, 
       [id]
     );
     const productionLogs = productionResult.rows;
@@ -52,7 +55,7 @@ exports.getMachineStats = async (req, res) => {
 
     // 3. Fetch downtime logs
     const downtimeResult = await pool.query(
-      'SELECT * FROM downtime_logs WHERE machine_id = $1 ORDER BY logged_at DESC', 
+      `SELECT * FROM downtime_logs WHERE machine_id = $1 ${dateFilterStr} ORDER BY logged_at DESC`, 
       [id]
     );
     const downtimeLogs = downtimeResult.rows;

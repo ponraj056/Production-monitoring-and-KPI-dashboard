@@ -1,9 +1,12 @@
 const pool = require('../config/db');
+const { getTimeFilter } = require('../utils/dateFilter');
 
 // GET all downtime logs
 exports.getAllDowntimeLogs = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM downtime_logs ORDER BY id');
+    const { timeRange } = req.query;
+    const dateFilterStr = getTimeFilter(timeRange, false);
+    const result = await pool.query(`SELECT * FROM downtime_logs ${dateFilterStr} ORDER BY logged_at DESC`);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

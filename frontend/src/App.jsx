@@ -19,15 +19,23 @@ import ForgotPassword from './components/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 
-function DashboardPage({ kpis, trendData, activities, loading }) {
+function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTimeRange }) {
   return (
     <div className="dashboard-container" style={{ position: 'relative' }}>
       <Dashboard3D />
       <div className="dashboard-header">
         <h1>⚙ Production Monitoring Dashboard</h1>
-        <span className="status-pill">
-          <span className="status-dot"></span> Live
-        </span>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
+          <span className="status-pill">
+            <span className="status-dot"></span> Live
+          </span>
+        </div>
       </div>
 
       <h2>Key Metrics</h2>
@@ -131,6 +139,9 @@ function AppRoutes() {
   ]);
   const [loading, setLoading] = useState(true);
 
+  // ---------- TIME RANGE ----------
+  const [timeRange, setTimeRange] = useState('all');
+
   // ---------- FETCH REAL DATA ON LOGIN ----------
   const fetchDashboardData = async (showLoading = true) => {
     if (!token) return;
@@ -139,8 +150,8 @@ function AppRoutes() {
     try {
       const [machinesData, kpiData, logsData] = await Promise.all([
         api.getMachines(),
-        api.getKpiSummary(),
-        api.getProductionLogs(),
+        api.getKpiSummary(null, timeRange),
+        api.getProductionLogs(timeRange),
       ]);
 
       setMachines(machinesData);
@@ -167,7 +178,7 @@ function AppRoutes() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [token]);
+  }, [token, timeRange]);
 
   // ---------- SOCKET.IO LIVE UPDATES ----------
   useEffect(() => {
@@ -235,7 +246,7 @@ function AppRoutes() {
         path="/dashboard"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} />
+            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} />
           </AppLayout>
         )}
       />

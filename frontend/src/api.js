@@ -42,7 +42,7 @@ export const api = {
 
   // Machines
   getMachines: () => apiRequest('/machines'),
-  getMachineStats: (id) => apiRequest(`/machines/${id}/stats`),
+  getMachineStats: (id, timeRange = 'all') => apiRequest(`/machines/${id}/stats?timeRange=${timeRange}`),
   createMachine: (machine) =>
     apiRequest('/machines', {
       method: 'POST',
@@ -57,7 +57,7 @@ export const api = {
     apiRequest(`/machines/${id}`, { method: 'DELETE' }),
 
   // Production Logs
-  getProductionLogs: () => apiRequest('/production-logs'),
+  getProductionLogs: (timeRange = 'all') => apiRequest(`/production-logs?timeRange=${timeRange}`),
   createProductionLog: (log) =>
     apiRequest('/production-logs', {
       method: 'POST',
@@ -65,7 +65,7 @@ export const api = {
     }),
 
   // Downtime Logs
-  getDowntimeLogs: () => apiRequest('/downtime-logs'),
+  getDowntimeLogs: (timeRange = 'all') => apiRequest(`/downtime-logs?timeRange=${timeRange}`),
   createDowntimeLog: (log) =>
     apiRequest('/downtime-logs', {
       method: 'POST',
@@ -73,6 +73,6 @@ export const api = {
     }),
 
   // KPI
-  getKpiSummary: (machineId) =>
-    apiRequest(`/kpi${machineId ? `?machine_id=${machineId}` : ''}`),
+  getKpiSummary: (machineId, timeRange = 'all') =>
+    apiRequest(`/kpi?timeRange=${timeRange}${machineId ? `&machine_id=${machineId}` : ''}`),
 };

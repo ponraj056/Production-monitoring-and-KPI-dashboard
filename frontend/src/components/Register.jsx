@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 function Register() {
   const [step, setStep] = useState(1);
@@ -55,7 +56,7 @@ function Register() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       
-      alert(data.message);
+      toast.success(data.message);
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Verification failed');

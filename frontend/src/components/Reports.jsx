@@ -1,5 +1,6 @@
 import { Download, FileText } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 function Reports({ machines, trendData }) {
   const today = new Date().toISOString().split('T')[0];
@@ -8,7 +9,7 @@ function Reports({ machines, trendData }) {
 
   const exportCSV = async () => {
     if (!fromDate || !toDate) {
-      alert('Please select both from and to dates');
+      toast.error('Please select both from and to dates');
       return;
     }
     
@@ -35,7 +36,7 @@ function Reports({ machines, trendData }) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      alert('Failed to export CSV');
+      toast.error('Failed to export CSV');
     }
   };
 

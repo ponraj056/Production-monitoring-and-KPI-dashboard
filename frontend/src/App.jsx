@@ -16,6 +16,7 @@ import socket from './socket';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { Toaster, toast } from 'react-hot-toast';
 
 function DashboardPage({ kpis, trendData, activities, loading }) {
   return (
@@ -201,7 +202,7 @@ function AppRoutes() {
       setMachines((prev) => [...prev, created]);
     } catch (err) {
       console.error('Failed to create machine:', err);
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -211,7 +212,7 @@ function AppRoutes() {
       setMachines((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
       console.error('Failed to delete machine:', err);
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -276,6 +277,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Toaster position="bottom-right" toastOptions={{ style: { background: '#333', color: '#fff', border: '1px solid #444' } }} />
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>

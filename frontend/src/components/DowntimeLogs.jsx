@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 function DowntimeLogs() {
   const { hasRole } = useAuth();
@@ -23,6 +24,7 @@ function DowntimeLogs() {
         setLogs(logsData);
       } catch (err) {
         console.error('Failed to load downtime data:', err);
+        toast.error('Failed to load downtime data');
       } finally {
         setLoading(false);
       }
@@ -54,7 +56,7 @@ function DowntimeLogs() {
       setLogs([newLog, ...logs]);
       setForm({ machine_id: '', reason: '', start: '', end: '' });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 

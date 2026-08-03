@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 function ForgotPassword() {
   const [step, setStep] = useState(1);
@@ -46,7 +47,7 @@ function ForgotPassword() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
-      alert('Password reset successfully. Please login.');
+      toast.success('Password reset successfully. Please login.');
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Failed to reset password');

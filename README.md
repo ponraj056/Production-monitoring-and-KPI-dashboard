@@ -42,12 +42,15 @@ Each folder has its own dedicated README with setup instructions specific to tha
 
 ## ✨ Features
 
-- 🔐 **Authentication** — Login system to secure dashboard access
-- 📊 **KPI Dashboard** — Live cards for OEE, Downtime %, Defect Rate, and Throughput
-- 📈 **Production Trend Chart** — Visualizes produced units vs. defects over shifts
-- 🏭 **Machine Management** — Add and view machines with live status (running / idle / down)
-- 🌙 **Dark "Control Room" UI** — Purpose-built dark theme suited for industrial monitoring dashboards
-- ⚡ *(Planned)* Real-time data simulation and Socket.io live updates
+- 🔐 **Advanced Authentication** — JWT-based login, Role-Based Access Control (Admin, Supervisor, Operator), OTP Email Verification, Admin Approval workflow, and Secure Password Resets.
+- 📊 **Real-Time KPI Dashboard** — Live calculation cards for OEE (Overall Equipment Effectiveness), Downtime %, Defect Rate, and Throughput.
+- ⚡ **Live Data Simulation** — Integrated Node.js background simulator generating realistic production and downtime logs, streamed instantly to the UI via **Socket.io**.
+- 🏭 **Machine Detail Pages** — Dedicated drill-down dashboards for individual machines, featuring localized KPIs and historical timelines.
+- 📅 **Dynamic Date Filtering** — Instantly filter all global and machine-specific metrics by *Today*, *Last 7 Days*, *Last 30 Days*, or *All Time*.
+- 🔧 **Maintenance Scheduling** — Supervisors can schedule, track, and mark preventative maintenance tasks as completed.
+- 📈 **Production Trend Charts** — Visualizes produced units vs. defects over shifts using Recharts.
+- 📄 **Reports Export** — Generate and download CSV reports of production data across custom date ranges.
+- 🌙 **Industrial UI & 3D Graphics** — "Control Room" aesthetic (Dark/Light mode toggle), modern Toast Notifications, and an interactive 3D factory model using React Three Fiber.
 
 ---
 

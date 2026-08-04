@@ -117,7 +117,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
+      { id: user.id, username: user.username, role: user.role, plant_id: user.plant_id },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -125,7 +125,7 @@ exports.login = async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username, role: user.role }
+      user: { id: user.id, username: user.username, role: user.role, plant_id: user.plant_id }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -199,5 +199,32 @@ exports.approveAdmin = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('<h1>Failed to approve admin account</h1>');
+  }
+};
+
+exports.switchPlant = async (req, res) => {
+  try {
+    const { plant_id } = req.body;
+    if (!plant_id) return res.status(400).json({ error: 'plant_id is required' });
+
+    // Ensure only super_admin can do this freely
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Only super_admin can switch plants' });
+    }
+
+    // Generate new token with new plant_id
+    const token = jwt.sign(
+      { id: req.user.id, username: req.user.username, role: req.user.role, plant_id },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      message: 'Plant switched successfully',
+      token,
+      user: { id: req.user.id, username: req.user.username, role: req.user.role, plant_id }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

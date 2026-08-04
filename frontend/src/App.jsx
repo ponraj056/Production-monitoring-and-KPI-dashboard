@@ -18,6 +18,7 @@ import socket from './socket';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import AlertSettings from './components/AlertSettings';
+import AuditLogs from './components/AuditLogs';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 import { AlertTriangle, X } from 'lucide-react';
@@ -360,6 +361,15 @@ function AppRoutes() {
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
             <AlertSettings />
+          </AppLayout>
+        )}
+      />
+
+      <Route
+        path="/audit-logs"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <AuditLogs />
           </AppLayout>
         )}
       />

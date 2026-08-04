@@ -1,10 +1,11 @@
 const pool = require('../config/db');
 const { getTimeFilter } = require('../utils/dateFilter');
+const { logAudit } = require('./auditController');
 
 // GET all machines
 exports.getAllMachines = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM machines ORDER BY id');
+    const result = await pool.query('SELECT * FROM machines WHERE plant_id = $1 ORDER BY id', [req.user.plant_id]);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -15,7 +16,7 @@ exports.getAllMachines = async (req, res) => {
 exports.getMachineById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM machines WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }
@@ -33,7 +34,7 @@ exports.getMachineStats = async (req, res) => {
     const dateFilterStr = getTimeFilter(timeRange, true);
 
     // 1. Fetch machine details
-    const machineResult = await pool.query('SELECT * FROM machines WHERE id = $1', [id]);
+    const machineResult = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
     if (machineResult.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }
@@ -93,13 +94,17 @@ exports.createMachine = async (req, res) => {
   try {
     const { name, status, line_id } = req.body;
     const result = await pool.query(
-      'INSERT INTO machines (name, status, line_id) VALUES ($1, $2, $3) RETURNING *',
-      [name, status || 'idle', line_id]
+      'INSERT INTO machines (name, status, line_id, plant_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, status || 'idle', line_id, req.user.plant_id]
     );
 
     // Emit real-time event to all connected clients
     const io = req.app.get('io');
     io.emit('machineCreated', result.rows[0]);
+
+    if (req.user) {
+      await logAudit(req.user.id, 'CREATE', 'machine', result.rows[0].id, null, result.rows[0]);
+    }
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -112,6 +117,11 @@ exports.updateMachine = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, status, line_id } = req.body;
+    
+    // Get before state
+    const beforeRes = await pool.query('SELECT * FROM machines WHERE id = $1', [id]);
+    const beforeState = beforeRes.rows.length > 0 ? beforeRes.rows[0] : null;
+
     const result = await pool.query(
       `UPDATE machines 
        SET name = $1, 
@@ -119,8 +129,8 @@ exports.updateMachine = async (req, res) => {
            line_id = $3,
            last_status_change = CASE WHEN status != $2 THEN NOW() ELSE last_status_change END,
            alert_sent = CASE WHEN status != $2 THEN FALSE ELSE alert_sent END
-       WHERE id = $4 RETURNING *`,
-      [name, status, line_id, id]
+       WHERE id = $4 AND plant_id = $5 RETURNING *`,
+      [name, status, line_id, id, req.user.plant_id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
@@ -129,6 +139,10 @@ exports.updateMachine = async (req, res) => {
     // Emit real-time event
     const io = req.app.get('io');
     io.emit('machineUpdated', result.rows[0]);
+
+    if (req.user && beforeState) {
+      await logAudit(req.user.id, 'UPDATE', 'machine', id, beforeState, result.rows[0]);
+    }
 
     res.json(result.rows[0]);
   } catch (err) {
@@ -140,10 +154,21 @@ exports.updateMachine = async (req, res) => {
 exports.deleteMachine = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM machines WHERE id = $1 RETURNING *', [id]);
+
+    const beforeRes = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
+    const beforeState = beforeRes.rows.length > 0 ? beforeRes.rows[0] : null;
+
+    if (!beforeState) return res.status(404).json({ error: 'Machine not found' });
+
+    const result = await pool.query('DELETE FROM machines WHERE id = $1 AND plant_id = $2 RETURNING *', [id, req.user.plant_id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }
+
+    if (req.user && beforeState) {
+      await logAudit(req.user.id, 'DELETE', 'machine', id, beforeState, null);
+    }
+
     res.json({ message: 'Machine deleted', deleted: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });

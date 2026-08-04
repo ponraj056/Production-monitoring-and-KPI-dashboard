@@ -33,6 +33,7 @@ const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const reportsRoutes = require('./routes/reportsRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 const alertRoutes = require('./routes/alertRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 app.use('/api/machines', machineRoutes);
 app.use('/api/production-logs', productionLogRoutes);
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/audit-logs', auditRoutes);
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);

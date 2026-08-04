@@ -29,15 +29,25 @@ async function apiRequest(endpoint, options = {}) {
 
 export const api = {
   // Auth
-  login: (username, password) =>
+  login: (credentials) =>
     apiRequest('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(credentials),
     }),
-  register: (username, password, role) =>
+  register: (userData) =>
     apiRequest('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, password, role }),
+      body: JSON.stringify(userData),
+    }),
+  verifyOtp: (data) =>
+    apiRequest('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  switchPlant: (plant_id) =>
+    apiRequest('/auth/switch-plant', {
+      method: 'POST',
+      body: JSON.stringify({ plant_id }),
     }),
 
   // Machines
@@ -101,4 +111,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(config),
     }),
+
+  // Audit Logs
+  getAuditLogs: () => apiRequest('/audit-logs'),
 };

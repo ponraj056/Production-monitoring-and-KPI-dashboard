@@ -9,10 +9,10 @@ exports.getKpiSummary = async (req, res) => {
     const { machine_id, timeRange } = req.query;
 
     const hasMachine = !!machine_id;
-    const machineFilter = hasMachine ? 'WHERE machine_id = $1' : '';
-    const dateFilterStr = getTimeFilter(timeRange, hasMachine);
+    let machineFilter = hasMachine ? 'WHERE machine_id = $1 AND plant_id = $2' : 'WHERE plant_id = $1';
+    let dateFilterStr = getTimeFilter(timeRange, true); // true because we already have WHERE
     const filterSql = machineFilter + dateFilterStr;
-    const params = hasMachine ? [machine_id] : [];
+    const params = hasMachine ? [machine_id, req.user.plant_id] : [req.user.plant_id];
 
     // Aggregate production data
     const productionResult = await pool.query(
@@ -72,8 +72,8 @@ exports.getKpiSummary = async (req, res) => {
 exports.getByShift = async (req, res) => {
   try {
     const { date } = req.query;
-    const dateFilter = date ? `WHERE DATE(logged_at) = $1` : '';
-    const params = date ? [date] : [];
+    const dateFilter = date ? `AND DATE(logged_at) = $2` : '';
+    const params = date ? [req.user.plant_id, date] : [req.user.plant_id];
 
     const result = await pool.query(
       `SELECT 
@@ -82,6 +82,7 @@ exports.getByShift = async (req, res) => {
         SUM(defective_units) AS total_defects,
         COUNT(*) AS total_shifts
        FROM production_logs 
+       WHERE plant_id = $1
        ${dateFilter}
        GROUP BY shift`,
       params

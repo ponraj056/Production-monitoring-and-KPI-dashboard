@@ -61,8 +61,45 @@ exports.getKpiSummary = async (req, res) => {
       quality: parseFloat((quality * 100).toFixed(2)),
       oee: parseFloat((oee * 100).toFixed(2)),
       downtimePercent: parseFloat(downtimePercent.toFixed(2)),
-      defectRate: parseFloat(defectRate.toFixed(2))
+      defectRate: parseFloat(defectRate.toFixed(2)),
+      healthScore: parseFloat(((0.4 * (oee * 100)) + (0.3 * ((1 - (downtimePercent/100)) * 100)) + (0.3 * ((1 - (defectRate/100)) * 100))).toFixed(2))
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getByShift = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const dateFilter = date ? `WHERE DATE(logged_at) = $1` : '';
+    const params = date ? [date] : [];
+
+    const result = await pool.query(
+      `SELECT 
+        shift,
+        SUM(units_produced) AS total_units,
+        SUM(defective_units) AS total_defects,
+        COUNT(*) AS total_shifts
+       FROM production_logs 
+       ${dateFilter}
+       GROUP BY shift`,
+      params
+    );
+
+    const shiftData = result.rows.map(row => {
+      const units = parseInt(row.total_units) || 0;
+      const defects = parseInt(row.total_defects) || 0;
+      const defectRate = units > 0 ? (defects / units) * 100 : 0;
+      return {
+        shift: row.shift,
+        totalUnits: units,
+        totalDefects: defects,
+        defectRate: parseFloat(defectRate.toFixed(2))
+      };
+    });
+
+    res.json(shiftData);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

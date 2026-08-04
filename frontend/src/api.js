@@ -75,6 +75,8 @@ export const api = {
   // KPI
   getKpiSummary: (machineId, timeRange = 'all') =>
     apiRequest(`/kpi?timeRange=${timeRange}${machineId ? `&machine_id=${machineId}` : ''}`),
+  getKpiByShift: (date) =>
+    apiRequest(`/kpi/by-shift${date ? `?date=${date}` : ''}`),
 
   // Maintenance
   getSchedules: () => apiRequest('/maintenance'),

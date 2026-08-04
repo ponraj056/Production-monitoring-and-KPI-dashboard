@@ -93,4 +93,12 @@ export const api = {
 
   // Predictions
   getDowntimeRisk: () => apiRequest('/predictions/downtime-risk'),
+
+  // Alerts
+  getAlertConfig: () => apiRequest('/alerts/config'),
+  updateAlertConfig: (config) =>
+    apiRequest('/alerts/config', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    }),
 };

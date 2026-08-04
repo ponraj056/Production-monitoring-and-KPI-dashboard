@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Gauge, TimerOff, AlertTriangle, TrendingUp, ArrowUp, ArrowDown } from 'lucide-react';
+import HealthGauge from './HealthGauge';
 
 function useCountUp(target, duration = 900) {
   const [value, setValue] = useState(0);
@@ -80,6 +81,9 @@ function KPICards({ kpis }) {
         trendDirection="up"
         color="#DBD4FF"
       />
+      <div className="kpi-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <HealthGauge score={kpis.healthScore || 0} />
+      </div>
     </div>
   );
 }

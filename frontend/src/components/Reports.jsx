@@ -6,6 +6,12 @@ function Reports({ machines, trendData }) {
   const today = new Date().toISOString().split('T')[0];
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
+  const [shiftFilter, setShiftFilter] = useState('all');
+
+  const filteredData = trendData.filter(d => {
+    if (shiftFilter === 'all') return true;
+    return d.shift.toLowerCase().includes(shiftFilter.toLowerCase());
+  });
 
   const exportCSV = async () => {
     if (!fromDate || !toDate) {
@@ -48,10 +54,15 @@ function Reports({ machines, trendData }) {
             <FileText size={20} color="#00d9ff" />
             <div>
               <p style={{ fontWeight: 600 }}>Production Summary Report</p>
-              <p style={{ fontSize: '13px', color: '#8b949e' }}>{trendData.length} shift records · {machines.length} machines</p>
+              <p style={{ fontSize: '13px', color: '#8b949e' }}>{filteredData.length} shift records · {machines.length} machines</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <select value={shiftFilter} onChange={e => setShiftFilter(e.target.value)} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff' }}>
+              <option value="all">All Shifts</option>
+              <option value="morning">Morning</option>
+              <option value="evening">Evening</option>
+            </select>
             <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff' }} />
             <span>to</span>
             <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff' }} />
@@ -72,7 +83,7 @@ function Reports({ machines, trendData }) {
           </tr>
         </thead>
         <tbody>
-          {trendData.map((d, i) => (
+          {filteredData.map((d, i) => (
             <tr key={i}>
               <td>{d.shift}</td>
               <td>{d.produced}</td>

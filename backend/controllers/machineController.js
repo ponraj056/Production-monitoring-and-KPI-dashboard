@@ -69,6 +69,7 @@ exports.getMachineStats = async (req, res) => {
     const availability = Math.max(0, 100 - (totalDowntime / 480 * 100)); 
     const quality = totalUnits > 0 ? ((totalUnits - totalDefects) / totalUnits * 100) : 0;
     const oee = Math.round((availability * quality) / 100) || 0;
+    const healthScore = Math.round((0.4 * oee) + (0.3 * availability) + (0.3 * (100 - defectRate)));
 
     res.json({
       machine,
@@ -76,7 +77,8 @@ exports.getMachineStats = async (req, res) => {
         oee,
         downtime: totalDowntime, // specific to machine
         defectRate,
-        throughput: totalUnits
+        throughput: totalUnits,
+        healthScore
       },
       productionLogs,
       downtimeLogs
@@ -111,7 +113,13 @@ exports.updateMachine = async (req, res) => {
     const { id } = req.params;
     const { name, status, line_id } = req.body;
     const result = await pool.query(
-      'UPDATE machines SET name = $1, status = $2, line_id = $3 WHERE id = $4 RETURNING *',
+      `UPDATE machines 
+       SET name = $1, 
+           status = $2, 
+           line_id = $3,
+           last_status_change = CASE WHEN status != $2 THEN NOW() ELSE last_status_change END,
+           alert_sent = CASE WHEN status != $2 THEN FALSE ELSE alert_sent END
+       WHERE id = $4 RETURNING *`,
       [name, status, line_id, id]
     );
     if (result.rows.length === 0) {

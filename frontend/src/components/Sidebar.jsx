@@ -36,6 +36,9 @@ function Sidebar({ onLogout, themeMode, toggleTheme }) {
         <NavLink to="/downtime" className={linkClass}>⏱ Downtime Logs</NavLink>
         <NavLink to="/maintenance" className={linkClass}>🔧 Maintenance</NavLink>
         <NavLink to="/reports" className={linkClass}>📄 Reports</NavLink>
+        {user?.role === 'admin' && (
+          <NavLink to="/alerts" className={linkClass}>⚙️ Alerts Config</NavLink>
+        )}
       </nav>
 
       <button className="theme-toggle" onClick={toggleTheme}>

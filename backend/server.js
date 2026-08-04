@@ -32,6 +32,7 @@ const authRoutes = require('./routes/authRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const reportsRoutes = require('./routes/reportsRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
+const alertRoutes = require('./routes/alertRoutes');
 
 app.use('/api/machines', machineRoutes);
 app.use('/api/production-logs', productionLogRoutes);
@@ -41,12 +42,14 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/predictions', predictionRoutes);
+app.use('/api/alerts', alertRoutes);
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
 const { startSimulator } = require('./simulator');
 const { initPredictionsJob } = require('./controllers/predictionsController');
+const { initAlertJob } = require('./jobs/alertJob');
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
@@ -58,6 +61,7 @@ io.on('connection', (socket) => {
 
 startSimulator(io);
 initPredictionsJob(io);
+initAlertJob();
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

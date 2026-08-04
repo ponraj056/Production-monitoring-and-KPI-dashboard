@@ -11,17 +11,18 @@ import DowntimeLogs from './components/DowntimeLogs';
 import Maintenance from './components/Maintenance';
 import Reports from './components/Reports';
 import ActivityFeed from './components/ActivityFeed';
-import Dashboard3D from './components/Dashboard3D';
+import ShiftChart from './components/ShiftChart';
 import './App.css';
 import { api } from './api';
 import socket from './socket';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
+import AlertSettings from './components/AlertSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 import { AlertTriangle, X } from 'lucide-react';
 
-function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTimeRange, predictions }) {
+function DashboardPage({ kpis, trendData, shiftData, activities, loading, timeRange, setTimeRange, predictions }) {
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
 
   const handleDismiss = (machineId) => {
@@ -76,8 +77,18 @@ function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTim
         <ProductionChart data={trendData} />
       </div>
 
-      <h2>Recent Activity</h2>
-      <ActivityFeed activities={activities} />
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '300px' }}>
+          <h2>Shift Performance (Today)</h2>
+          <div className="chart-panel">
+            <ShiftChart data={shiftData} />
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: '300px' }}>
+          <h2>Recent Activity</h2>
+          <ActivityFeed activities={activities} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -158,8 +169,9 @@ function AppRoutes() {
 
   // ---------- DATA STATE ----------
   const [machines, setMachines] = useState([]);
-  const [kpis, setKpis] = useState({ oee: 0, downtime: 0, defectRate: 0, throughput: 0 });
+  const [kpis, setKpis] = useState({ oee: 0, downtime: 0, defectRate: 0, throughput: 0, healthScore: 0 });
   const [trendData, setTrendData] = useState([]);
+  const [shiftData, setShiftData] = useState([]);
   const [activities] = useState([
     { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
     { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },
@@ -179,11 +191,13 @@ function AppRoutes() {
     if (showLoading) setLoading(true);
     
     try {
-      const [machinesData, kpiData, logsData, predictionsData] = await Promise.all([
+      const todayDate = new Date().toISOString().split('T')[0];
+      const [machinesData, kpiData, logsData, predictionsData, shiftRes] = await Promise.all([
         api.getMachines(),
         api.getKpiSummary(null, timeRange),
         api.getProductionLogs(timeRange),
         api.getDowntimeRisk(),
+        api.getKpiByShift(todayDate),
       ]);
 
       setMachines(machinesData);
@@ -194,7 +208,10 @@ function AppRoutes() {
         downtime: kpiData.downtimePercent,
         defectRate: kpiData.defectRate,
         throughput: kpiData.totalUnits,
+        healthScore: kpiData.healthScore,
       });
+
+      setShiftData(shiftRes);
 
       const chartData = logsData.map((log) => ({
         shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
@@ -282,7 +299,7 @@ function AppRoutes() {
         path="/dashboard"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <DashboardPage kpis={kpis} trendData={trendData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} predictions={predictions} />
+            <DashboardPage kpis={kpis} trendData={trendData} shiftData={shiftData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} predictions={predictions} />
           </AppLayout>
         )}
       />
@@ -334,6 +351,15 @@ function AppRoutes() {
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
             <ReportsPage machines={machines} trendData={trendData} />
+          </AppLayout>
+        )}
+      />
+
+      <Route
+        path="/alerts"
+        element={requireAuth(
+          <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
+            <AlertSettings />
           </AppLayout>
         )}
       />

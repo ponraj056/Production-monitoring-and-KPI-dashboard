@@ -53,7 +53,6 @@ function DashboardPage({ kpis, trendData, activities, loading, timeRange, setTim
           </button>
         </div>
       ))}
-      <Dashboard3D />
       <div className="dashboard-header">
         <h1>⚙ Production Monitoring Dashboard</h1>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

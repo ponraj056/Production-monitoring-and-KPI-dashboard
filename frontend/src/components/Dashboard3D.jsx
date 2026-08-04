@@ -43,7 +43,6 @@ function Dashboard3D() {
     // Animation loop
     let animationId;
     const animate = () => {
-      knot.rotation.x += 0.004;
       knot.rotation.y += 0.006;
       renderer.render(scene, camera);
       animationId = requestAnimationFrame(animate);

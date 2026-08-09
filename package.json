@@ -2,7 +2,7 @@
   "name": "production-monitoring-dashboard",
   "version": "1.0.0",
   "scripts": {
-    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "postinstall": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
     "start": "npm start --prefix backend"
   }
 }

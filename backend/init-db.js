@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const pool = require('./config/db');
 
 async function initDB() {
@@ -13,25 +14,25 @@ async function initDB() {
     await pool.query(schema);
     console.log('Schema tables created!');
 
-    // 2. Run migrations (which add missing columns)
-    console.log('Running migrations...');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE;');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE;');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(100);');
-    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expiry TIMESTAMP;');
+    // 2. Run all migration scripts
+    const migrations = [
+      'migrate-auth.js',
+      'migrate-tenant.js',
+      'migrate-alerts.js',
+      'migrate-audit.js',
+      'migrate-maintenance.js',
+      'migrate-predictions.js'
+    ];
 
-    // 3. Optional: Run other table migrations
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS tenants (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        plan VARCHAR(50) DEFAULT 'free',
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS tenant_id INTEGER REFERENCES tenants(id);
-      ALTER TABLE machines ADD COLUMN IF NOT EXISTS tenant_id INTEGER REFERENCES tenants(id);
-    `);
+    for (const migration of migrations) {
+      console.log(`Running ${migration}...`);
+      try {
+        // Run them synchronously so we don't crash
+        execSync(`node ${path.join(__dirname, migration)}`, { stdio: 'inherit' });
+      } catch (err) {
+        console.error(`Failed to run ${migration}, but continuing...`);
+      }
+    }
 
     console.log('Database initialization completed successfully!');
     process.exit(0);

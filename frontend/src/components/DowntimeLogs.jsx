@@ -4,23 +4,18 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
-function DowntimeLogs() {
+function DowntimeLogs({ machines = [] }) {
   const { hasRole } = useAuth();
   const canEdit = hasRole('admin', 'supervisor');
   const [logs, setLogs] = useState([]);
-  const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ machine_id: '', reason: '', start: '', end: '' });
 
-  // Load real machines and downtime logs on mount
+  // Load real downtime logs on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [machinesData, logsData] = await Promise.all([
-          api.getMachines(),
-          api.getDowntimeLogs(),
-        ]);
-        setMachines(machinesData);
+        const logsData = await api.getDowntimeLogs();
         setLogs(logsData);
       } catch (err) {
         console.error('Failed to load downtime data:', err);

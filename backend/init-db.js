@@ -28,7 +28,7 @@ async function initDB() {
       console.log(`Running ${migration}...`);
       try {
         // Run them synchronously so we don't crash
-        execSync(`node ${path.join(__dirname, migration)}`, { stdio: 'inherit' });
+        execSync(`node "${path.join(__dirname, migration)}"`, { stdio: 'inherit' });
       } catch (err) {
         console.error(`Failed to run ${migration}, but continuing...`);
       }

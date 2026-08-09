@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import AnimatedBackground from './AnimatedBackground';
 
 function Register() {
   const [step, setStep] = useState(1);
@@ -66,7 +67,8 @@ function Register() {
   };
 
   return (
-    <div className="login-container">
+    <AnimatedBackground>
+      <div className="login-container">
       <div className="login-card">
         <h2>Create account</h2>
         
@@ -96,7 +98,6 @@ function Register() {
             >
               <option value="operator">Operator</option>
               <option value="supervisor">Supervisor</option>
-              <option value="admin">Admin</option>
             </select>
             <input
               type="password"
@@ -137,7 +138,8 @@ function Register() {
           Already have an account? <Link to="/login">Log in</Link>
         </p>
       </div>
-    </div>
+      </div>
+    </AnimatedBackground>
   );
 }
 

@@ -1,4 +1,5 @@
 const pool = require('./config/db');
+const bcrypt = require('bcrypt');
 
 async function migrate() {
   try {
@@ -39,8 +40,19 @@ async function migrate() {
       `, [alphaId]);
     }
 
-    // Optional: make admin super_admin
-    await pool.query("UPDATE users SET role = 'super_admin' WHERE username = 'admin'");
+    // Ensure admin user exists
+    const adminCheck = await pool.query("SELECT id FROM users WHERE username = 'admin'");
+    if (adminCheck.rows.length === 0) {
+      console.log('Creating default admin user...');
+      const hashed = await bcrypt.hash('admin123', 10);
+      await pool.query(
+        "INSERT INTO users (username, password, role, is_approved, is_verified, plant_id) VALUES ($1, $2, 'super_admin', TRUE, TRUE, $3)",
+        ['admin', hashed, alphaId]
+      );
+    } else {
+      // make existing admin super_admin
+      await pool.query("UPDATE users SET role = 'super_admin' WHERE username = 'admin'");
+    }
 
     console.log('Multi-tenant migration completed successfully!');
   } catch (err) {

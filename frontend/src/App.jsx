@@ -6,7 +6,7 @@ import MachineList from './components/MachineList';
 import MachineForm from './components/MachineForm';
 import MachineDetails from './components/MachineDetails';
 import KPICards from './components/KPICards';
-import ProductionChart from './components/ProductionChart';
+import ProductionChart, { ProductionDefectChart, OEETrendChart } from './components/ProductionChart';
 import DowntimeLogs from './components/DowntimeLogs';
 import Maintenance from './components/Maintenance';
 import Reports from './components/Reports';
@@ -22,8 +22,35 @@ import AuditLogs from './components/AuditLogs';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster, toast } from 'react-hot-toast';
 import { AlertTriangle, X } from 'lucide-react';
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
-function DashboardPage({ kpis, trendData, shiftData, activities, loading, timeRange, setTimeRange, predictions }) {
+const DOWNTIME_COLORS = ['#ef5350', '#ff9800', '#ffb74d', '#e57373', '#f44336', '#ff7043', '#ec407a'];
+
+function DowntimeBarChart({ data }) {
+  if (!data || data.length === 0) {
+    return <p style={{ textAlign: 'center', color: 'var(--text-faint)', padding: '40px' }}>No downtime data recorded yet</p>;
+  }
+  return (
+    <div style={{ width: '100%', height: '260px' }}>
+      <ResponsiveContainer>
+        <ComposedChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+          <XAxis dataKey="name" stroke="var(--text-faint)" fontSize={11} tick={{ fill: 'var(--text-muted)' }} angle={-20} textAnchor="end" height={50} />
+          <YAxis stroke="var(--text-faint)" fontSize={11} tick={{ fill: 'var(--text-muted)' }} label={{ value: 'Minutes', angle: -90, position: 'insideLeft', fill: 'var(--text-faint)', fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px' }} labelStyle={{ color: 'var(--text-primary)' }} />
+          <Legend />
+          <Bar dataKey="downtime" name="Downtime (min)" radius={[6, 6, 0, 0]} maxBarSize={60}>
+            {data.map((entry, index) => (
+              <Cell key={index} fill={DOWNTIME_COLORS[index % DOWNTIME_COLORS.length]} />
+            ))}
+          </Bar>
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function DashboardPage({ kpis, trendData, downtimeTrendData, shiftData, activities, loading, timeRange, setTimeRange, predictions }) {
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
 
   const handleDismiss = (machineId) => {
@@ -73,9 +100,31 @@ function DashboardPage({ kpis, trendData, shiftData, activities, loading, timeRa
       <h2>Key Metrics</h2>
       {loading ? <p>Loading KPIs...</p> : <KPICards kpis={kpis} />}
 
-      <h2>Production Trend</h2>
+      {/* ── Chart Row 1: Production & Defects ─────────────────────── */}
+      <h2>📊 Production vs Defects</h2>
       <div className="chart-panel">
-        <ProductionChart data={trendData} />
+        <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginBottom: '12px' }}>
+          Green bars = units produced · Red bars = defective units · Orange line = defect rate % (above 10% is critical)
+        </p>
+        <ProductionDefectChart data={trendData} />
+      </div>
+
+      {/* ── Chart Row 2: Quality & OEE ───────────────────────────── */}
+      <h2>📈 Quality & Defect Rate Trend</h2>
+      <div className="chart-panel">
+        <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginBottom: '12px' }}>
+          Quality % = good units ÷ total units · Defect Rate % = bad units ÷ total · 85% quality line = world-class target
+        </p>
+        <OEETrendChart data={trendData} />
+      </div>
+
+      {/* ── Chart Row 3: Downtime per machine ───────────────────── */}
+      <h2>⏱ Downtime Overview</h2>
+      <div className="chart-panel">
+        <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginBottom: '12px' }}>
+          Total downtime minutes per machine across the selected time period
+        </p>
+        {loading ? <p>Loading...</p> : <DowntimeBarChart data={downtimeTrendData} />}
       </div>
 
       <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', flexWrap: 'wrap' }}>
@@ -121,13 +170,13 @@ function MachinesPage({ machines, handleAddMachine, handleDeleteMachine, loading
   );
 }
 
-function DowntimeLogsPage() {
+function DowntimeLogsPage({ machines }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>⏱ Downtime Logs</h1>
       </div>
-      <DowntimeLogs />
+      <DowntimeLogs machines={machines} />
     </div>
   );
 }
@@ -173,6 +222,7 @@ function AppRoutes() {
   const [kpis, setKpis] = useState({ oee: 0, downtime: 0, defectRate: 0, throughput: 0, healthScore: 0 });
   const [trendData, setTrendData] = useState([]);
   const [shiftData, setShiftData] = useState([]);
+  const [downtimeTrendData, setDowntimeTrendData] = useState([]);
   const [activities] = useState([
     { id: 1, type: 'success', text: 'CNC Machine 1 completed batch #204 — 45 units produced', time: '2 minutes ago' },
     { id: 2, type: 'warning', text: 'Press Machine 2 downtime exceeded 10 minutes', time: '18 minutes ago' },
@@ -193,12 +243,13 @@ function AppRoutes() {
     
     try {
       const todayDate = new Date().toISOString().split('T')[0];
-      const [machinesData, kpiData, logsData, predictionsData, shiftRes] = await Promise.all([
+      const [machinesData, kpiData, logsData, predictionsData, shiftRes, downtimeLogs] = await Promise.all([
         api.getMachines(),
         api.getKpiSummary(null, timeRange),
         api.getProductionLogs(timeRange),
         api.getDowntimeRisk(),
         api.getKpiByShift(todayDate),
+        api.getDowntimeLogs(timeRange),
       ]);
 
       setMachines(machinesData);
@@ -220,6 +271,16 @@ function AppRoutes() {
         defects: log.defective_units,
       }));
       setTrendData(chartData);
+
+      // Aggregate downtime by machine name
+      const downtimeByMachine = {};
+      downtimeLogs.forEach(log => {
+        const machine = machinesData.find(m => m.id === log.machine_id);
+        const name = machine ? machine.name : `Machine #${log.machine_id}`;
+        downtimeByMachine[name] = (downtimeByMachine[name] || 0) + (log.downtime_minutes || 0);
+      });
+      const downtimeArr = Object.entries(downtimeByMachine).map(([name, downtime]) => ({ name, downtime }));
+      setDowntimeTrendData(downtimeArr);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
@@ -236,7 +297,10 @@ function AppRoutes() {
     if (!token) return;
 
     socket.on('machineCreated', (newMachine) => {
-      setMachines((prev) => [...prev, newMachine]);
+      setMachines((prev) => {
+        if (prev.some(m => m.id === newMachine.id)) return prev;
+        return [...prev, newMachine];
+      });
     });
 
     socket.on('machineUpdated', (updatedMachine) => {
@@ -265,10 +329,14 @@ function AppRoutes() {
   const handleAddMachine = async (newMachine) => {
     try {
       const created = await api.createMachine(newMachine);
-      setMachines((prev) => [...prev, created]);
+      setMachines((prev) => {
+        if (prev.some(m => m.id === created.id)) return prev;
+        return [...prev, created];
+      });
+      toast.success('Machine added successfully!');
     } catch (err) {
       console.error('Failed to create machine:', err);
-      toast.error(err.message);
+      toast.error(err.message || 'Failed to create machine');
     }
   };
 
@@ -276,9 +344,10 @@ function AppRoutes() {
     try {
       await api.deleteMachine(id);
       setMachines((prev) => prev.filter((m) => m.id !== id));
+      toast.success('Machine deleted successfully!');
     } catch (err) {
       console.error('Failed to delete machine:', err);
-      toast.error(err.message);
+      toast.error(err.message || 'Failed to delete machine');
     }
   };
 
@@ -300,7 +369,17 @@ function AppRoutes() {
         path="/dashboard"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <DashboardPage kpis={kpis} trendData={trendData} shiftData={shiftData} activities={activities} loading={loading} timeRange={timeRange} setTimeRange={setTimeRange} predictions={predictions} />
+            <DashboardPage
+              kpis={kpis}
+              trendData={trendData}
+              downtimeTrendData={downtimeTrendData}
+              shiftData={shiftData}
+              activities={activities}
+              loading={loading}
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+              predictions={predictions}
+            />
           </AppLayout>
         )}
       />
@@ -333,7 +412,7 @@ function AppRoutes() {
         path="/downtime"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <DowntimeLogsPage />
+            <DowntimeLogsPage machines={machines} />
           </AppLayout>
         )}
       />
@@ -342,7 +421,7 @@ function AppRoutes() {
         path="/maintenance"
         element={requireAuth(
           <AppLayout onLogout={handleLogout} themeMode={themeMode} toggleTheme={toggleTheme}>
-            <Maintenance />
+            <Maintenance machines={machines} />
           </AppLayout>
         )}
       />

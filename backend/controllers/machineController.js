@@ -5,7 +5,10 @@ const { logAudit } = require('./auditController');
 // GET all machines
 exports.getAllMachines = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM machines WHERE plant_id = $1 ORDER BY id', [req.user.plant_id]);
+    const result = await pool.query(
+      'SELECT * FROM machines WHERE plant_id IS NOT DISTINCT FROM $1 ORDER BY id',
+      [req.user.plant_id]
+    );
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -16,7 +19,10 @@ exports.getAllMachines = async (req, res) => {
 exports.getMachineById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
+    const result = await pool.query(
+      'SELECT * FROM machines WHERE id = $1 AND plant_id IS NOT DISTINCT FROM $2',
+      [id, req.user.plant_id]
+    );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }
@@ -34,8 +40,13 @@ exports.getMachineStats = async (req, res) => {
     const dateFilterStr = getTimeFilter(timeRange, true);
 
     // 1. Fetch machine details
-    const machineResult = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
+    console.log(`getMachineStats invoked for id=${id}, plant_id=${req.user.plant_id}, timeRange=${timeRange}`);
+    const machineResult = await pool.query(
+      'SELECT * FROM machines WHERE id = $1 AND plant_id IS NOT DISTINCT FROM $2',
+      [id, req.user.plant_id]
+    );
     if (machineResult.rows.length === 0) {
+      console.log(`Machine not found: id=${id}, plant_id=${req.user.plant_id}`);
       return res.status(404).json({ error: 'Machine not found' });
     }
     const machine = machineResult.rows[0];
@@ -72,6 +83,13 @@ exports.getMachineStats = async (req, res) => {
     const oee = Math.round((availability * quality) / 100) || 0;
     const healthScore = Math.round((0.4 * oee) + (0.3 * availability) + (0.3 * (100 - defectRate)));
 
+    // 4. Fetch maintenance schedules
+    const maintenanceResult = await pool.query(
+      `SELECT * FROM maintenance_schedules WHERE machine_id = $1 ORDER BY scheduled_date DESC`,
+      [id]
+    );
+    const maintenanceLogs = maintenanceResult.rows;
+
     res.json({
       machine,
       kpis: {
@@ -82,9 +100,11 @@ exports.getMachineStats = async (req, res) => {
         healthScore
       },
       productionLogs,
-      downtimeLogs
+      downtimeLogs,
+      maintenanceLogs
     });
   } catch (err) {
+    console.error('getMachineStats ERROR:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -129,7 +149,7 @@ exports.updateMachine = async (req, res) => {
            line_id = $3,
            last_status_change = CASE WHEN status != $2 THEN NOW() ELSE last_status_change END,
            alert_sent = CASE WHEN status != $2 THEN FALSE ELSE alert_sent END
-       WHERE id = $4 AND plant_id = $5 RETURNING *`,
+       WHERE id = $4 AND plant_id IS NOT DISTINCT FROM $5 RETURNING *`,
       [name, status, line_id, id, req.user.plant_id]
     );
     if (result.rows.length === 0) {
@@ -155,12 +175,18 @@ exports.deleteMachine = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const beforeRes = await pool.query('SELECT * FROM machines WHERE id = $1 AND plant_id = $2', [id, req.user.plant_id]);
+    const beforeRes = await pool.query(
+      'SELECT * FROM machines WHERE id = $1 AND plant_id IS NOT DISTINCT FROM $2',
+      [id, req.user.plant_id]
+    );
     const beforeState = beforeRes.rows.length > 0 ? beforeRes.rows[0] : null;
 
     if (!beforeState) return res.status(404).json({ error: 'Machine not found' });
 
-    const result = await pool.query('DELETE FROM machines WHERE id = $1 AND plant_id = $2 RETURNING *', [id, req.user.plant_id]);
+    const result = await pool.query(
+      'DELETE FROM machines WHERE id = $1 AND plant_id IS NOT DISTINCT FROM $2 RETURNING *',
+      [id, req.user.plant_id]
+    );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Machine not found' });
     }

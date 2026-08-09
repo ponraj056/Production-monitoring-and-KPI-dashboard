@@ -34,6 +34,7 @@ const reportsRoutes = require('./routes/reportsRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const auditRoutes = require('./routes/auditRoutes');
+const publicRoutes = require('./routes/publicRoutes');
 
 app.use('/api/machines', machineRoutes);
 app.use('/api/production-logs', productionLogRoutes);
@@ -45,6 +46,7 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/public', publicRoutes);
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
@@ -78,3 +80,14 @@ app.get('*', (req, res) => {
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ Port ${PORT} is already in use.`);
+    console.error(`   Run this command to free it, then try again:`);
+    console.error(`   PowerShell: Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT} -State Listen).OwningProcess -Force\n`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
+});

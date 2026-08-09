@@ -5,13 +5,17 @@ const { getTimeFilter } = require('../utils/dateFilter');
 exports.getAllDowntimeLogs = async (req, res) => {
   try {
     const { timeRange } = req.query;
-    const dateFilterStr = getTimeFilter(timeRange, false);
-    const result = await pool.query(`SELECT * FROM downtime_logs ${dateFilterStr} ORDER BY logged_at DESC`);
+    let dateFilterStr = getTimeFilter(timeRange, true);
+    const result = await pool.query(
+      `SELECT * FROM downtime_logs WHERE plant_id IS NOT DISTINCT FROM $1 ${dateFilterStr} ORDER BY logged_at DESC`,
+      [req.user.plant_id]
+    );
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // GET single downtime log by id
 exports.getDowntimeLogById = async (req, res) => {

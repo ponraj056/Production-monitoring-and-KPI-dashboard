@@ -1,0 +1,164 @@
+.ab-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #FAFAFA; /* Soft off-white */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ab-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Wave */
+.ab-wave-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ab-wave {
+  display: block;
+  width: 200%;
+  height: 150px;
+  animation: waveScroll 20s linear infinite;
+}
+
+@keyframes waveScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Floating Stats */
+.ab-stats-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none; /* Let clicks pass through */
+}
+
+.ab-stat-pos {
+  position: absolute;
+}
+
+.ab-pos-1 { top: 15%; left: 10%; }
+.ab-pos-2 { top: 15%; right: 10%; }
+.ab-pos-3 { bottom: 20%; left: 15%; }
+
+.ab-stat-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(139, 195, 74, 0.2);
+  border-radius: 12px;
+  padding: 16px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  min-width: 140px;
+  text-align: center;
+}
+
+.ab-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ab-stat-title {
+  font-size: 0.85rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.ab-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2E7D32; /* Deep Country Garden green */
+}
+
+/* Main Content Layer */
+.ab-content-layer {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Make Login Card pop a bit more */
+.ab-content-layer .login-container {
+  background: transparent;
+  min-height: auto;
+}
+
+.ab-content-layer .login-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(139, 195, 74, 0.2);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .ab-wrapper {
+    flex-direction: column;
+    padding-bottom: 40px;
+  }
+  
+  .ab-content-layer {
+    margin-bottom: 20px;
+  }
+
+  .ab-stats-container {
+    position: relative;
+    height: auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    z-index: 3;
+    padding: 0 16px;
+  }
+
+  .ab-stat-pos {
+    position: static;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .ab-stat-card {
+    padding: 12px 16px;
+  }
+
+  .ab-stat-value {
+    font-size: 1.4rem;
+  }
+}

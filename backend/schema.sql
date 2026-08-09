@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE machines (
+CREATE TABLE IF NOT EXISTS machines (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   status VARCHAR(20) DEFAULT 'idle',
@@ -14,7 +14,7 @@ CREATE TABLE machines (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE production_logs (
+CREATE TABLE IF NOT EXISTS production_logs (
   id SERIAL PRIMARY KEY,
   machine_id INTEGER REFERENCES machines(id),
   units_produced INTEGER DEFAULT 0,
@@ -23,7 +23,7 @@ CREATE TABLE production_logs (
   logged_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE downtime_logs (
+CREATE TABLE IF NOT EXISTS downtime_logs (
   id SERIAL PRIMARY KEY,
   machine_id INTEGER REFERENCES machines(id),
   reason VARCHAR(100),

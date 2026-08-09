@@ -9,7 +9,7 @@ exports.getKpiSummary = async (req, res) => {
     const { machine_id, timeRange } = req.query;
 
     const hasMachine = !!machine_id;
-    let machineFilter = hasMachine ? 'WHERE machine_id = $1 AND plant_id = $2' : 'WHERE plant_id = $1';
+    let machineFilter = hasMachine ? 'WHERE machine_id = $1 AND plant_id IS NOT DISTINCT FROM $2' : 'WHERE plant_id IS NOT DISTINCT FROM $1';
     let dateFilterStr = getTimeFilter(timeRange, true); // true because we already have WHERE
     const filterSql = machineFilter + dateFilterStr;
     const params = hasMachine ? [machine_id, req.user.plant_id] : [req.user.plant_id];
@@ -82,7 +82,7 @@ exports.getByShift = async (req, res) => {
         SUM(defective_units) AS total_defects,
         COUNT(*) AS total_shifts
        FROM production_logs 
-       WHERE plant_id = $1
+       WHERE plant_id IS NOT DISTINCT FROM $1
        ${dateFilter}
        GROUP BY shift`,
       params

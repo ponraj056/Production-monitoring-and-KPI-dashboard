@@ -45,7 +45,7 @@ function MachineDetails() {
     return <div className="dashboard-container"><p>Machine not found.</p></div>;
   }
 
-  const { machine, kpis, productionLogs, downtimeLogs } = data;
+  const { machine, kpis, productionLogs, downtimeLogs, maintenanceLogs = [] } = data;
 
   const chartData = productionLogs.map(log => ({
     shift: `${new Date(log.logged_at).toLocaleDateString()} - ${log.shift}`,
@@ -130,6 +130,35 @@ function MachineDetails() {
                 </tr>
               ))}
               {downtimeLogs.length === 0 && <tr><td colSpan="3">No recent downtime</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <h2>Maintenance History</h2>
+        <div className="chart-panel">
+          <table className="machine-table">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Scheduled Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {maintenanceLogs.map(log => (
+                <tr key={log.id}>
+                  <td>{log.task_description}</td>
+                  <td>
+                    <span className={`status-badge status-${log.status === 'completed' ? 'running' : 'idle'}`}>
+                      {log.status}
+                    </span>
+                  </td>
+                  <td>{new Date(log.scheduled_date).toLocaleDateString()}</td>
+                </tr>
+              ))}
+              {maintenanceLogs.length === 0 && <tr><td colSpan="3">No maintenance history available</td></tr>}
             </tbody>
           </table>
         </div>

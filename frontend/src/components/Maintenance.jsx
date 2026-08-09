@@ -4,22 +4,17 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
-function Maintenance() {
+function Maintenance({ machines = [] }) {
   const { hasRole } = useAuth();
   const canEdit = hasRole('admin', 'supervisor');
   
   const [schedules, setSchedules] = useState([]);
-  const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ machine_id: '', task_description: '', scheduled_date: '' });
 
   const fetchData = async () => {
     try {
-      const [machinesData, schedulesData] = await Promise.all([
-        api.getMachines(),
-        api.getSchedules()
-      ]);
-      setMachines(machinesData);
+      const schedulesData = await api.getSchedules();
       setSchedules(schedulesData);
     } catch (err) {
       console.error(err);

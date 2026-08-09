@@ -4,51 +4,56 @@
   padding: 0;
 }
 
-:root {
-  --bg-primary: #000000;
-  --bg-secondary: #121212;
-  --bg-tertiary: #1a1a1a;
-  --border-color: #2e2e2e;
-  --text-primary: #ffffff;
-  --text-muted: #b3b3b3;
-  --text-faint: #7a7a7a;
+:root, [data-theme='dark'] {
+  /* Dark Green Theme */
+  --bg-primary: #0a140d;     /* Very dark green, almost black */
+  --bg-secondary: #112215;   /* Dark green cards */
+  --bg-tertiary: #19311e;    /* Slightly lighter for hover states */
+  --border-color: #24462a;   /* Dark green border */
+  
+  --text-primary: #ffffff;   /* Pure white for primary text */
+  --text-muted: #a6c0ac;     /* Muted green-white for secondary text */
+  --text-faint: #6c8c6c;     /* Faint green for hints/placeholders */
 
-  --accent-primary: #d570e7;
-  --accent-primary-glow: rgba(237, 157, 255, 0.4);
-  --accent-teal: #a9a94a;
-  --accent-danger: #c77fd6;
-  --accent-warning: #DBD4FF;
+  --accent-primary: #4CAF50; /* Vibrant Green */
+  --accent-primary-glow: rgba(76, 175, 80, 0.3);
+  --accent-teal: #66BB6A;    /* Lighter green for contrast */
+  --accent-danger: #ef5350;  /* Red for danger */
+  --accent-warning: #ffb74d; /* Soft orange for warnings */
 
-  --status-running-bg: #1e2317;
-  --status-running-text: #c3c369;
-  --status-idle-bg: #21212e;
-  --status-idle-text: #DBD4FF;
-  --status-down-bg: #2b1a30;
-  --status-down-text: #c77fd6;
+  /* Status Colors */
+  --status-running-bg: #19311e;
+  --status-running-text: #81c784;
+  --status-idle-bg: #3e2723;
+  --status-idle-text: #ffb74d;
+  --status-down-bg: #4a148c;
+  --status-down-text: #e57373;
 }
 
-
 [data-theme='light'] {
-  --bg-primary: #f5eff9;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #ece0f3;
-  --border-color: #ddcbe8;
-  --text-primary: #100e11;
-  --text-muted: #141314;
-  --text-faint: #2b2a2d;
+  /* Light White & Green Theme */
+  --bg-primary: #f4f7f4;     /* Light off-white with green tint */
+  --bg-secondary: #ffffff;   /* Pure white cards */
+  --bg-tertiary: #e9f0e9;    /* Light green-white for hover states */
+  --border-color: #d2e0d2;   /* Light green border */
+  
+  --text-primary: #0a140d;   /* Very dark green for primary text */
+  --text-muted: #2d4c35;     /* Muted green for secondary text */
+  --text-faint: #6c8c6c;     /* Faint green for hints/placeholders */
 
-  --accent-primary: #723480;
-  --accent-primary-glow: rgba(114, 52, 128, 0.2);
-  --accent-teal: #808034;
-  --accent-danger: #4f2258;
-  --accent-warning: #6c6c6e;
+  --accent-primary: #388E3C; /* Darker Green */
+  --accent-primary-glow: rgba(56, 142, 60, 0.2);
+  --accent-teal: #2E7D32;    /* Darker green for contrast */
+  --accent-danger: #d32f2f;  /* Keep red for danger, but softer */
+  --accent-warning: #f57c00; /* Soft orange for warnings */
 
-  --status-running-bg: #eef0dc;
-  --status-running-text: #5c5c1f;
-  --status-idle-bg: #e9e5f9;
-  --status-idle-text: #5c4f8a;
-  --status-down-bg: #f0e3f3;
-  --status-down-text: #c9c4ca;
+  /* Status Colors */
+  --status-running-bg: #e8f5e9;
+  --status-running-text: #2e7d32;
+  --status-idle-bg: #fff3e0;
+  --status-idle-text: #e65100;
+  --status-down-bg: #ffebee;
+  --status-down-text: #c62828;
 }
 
 

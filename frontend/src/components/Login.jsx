@@ -1,14 +1,29 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import AnimatedBackground from './AnimatedBackground';
 
 function Login({ onLogin }) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const toggleAdminMode = (e) => {
+    e.preventDefault();
+    if (!isAdminMode) {
+      setIdentifier('admin');
+      setPassword('');
+    } else {
+      setIdentifier('');
+      setPassword('');
+    }
+    setIsAdminMode(!isAdminMode);
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,17 +51,24 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="login-container">
+    <AnimatedBackground>
+      <div className="login-container">
       <div className="login-card">
-        <h2>Login</h2>
+        <h2>{isAdminMode ? 'Admin Login' : 'Login'}</h2>
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Username or Email"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-          />
+          {!isAdminMode ? (
+            <input
+              type="text"
+              placeholder="Username or Email"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+            />
+          ) : (
+            <div style={{ padding: '12px', background: 'var(--surface-light)', borderRadius: '4px', marginBottom: '15px', color: 'var(--text-muted)' }}>
+              Logging in as: <strong>Administrator</strong>
+            </div>
+          )}
           <input
             type="password"
             placeholder="Password"
@@ -56,7 +78,14 @@ function Login({ onLogin }) {
           />
           {error && <p className="login-error">{error}</p>}
           
-          <div style={{ textAlign: 'right', marginBottom: '15px', fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '14px' }}>
+            <button 
+              type="button" 
+              onClick={toggleAdminMode}
+              style={{ background: 'none', border: 'none', color: 'var(--accent-secondary)', cursor: 'pointer', padding: 0 }}
+            >
+              {isAdminMode ? 'Standard Login' : 'Admin Login'}
+            </button>
             <Link to="/forgot-password" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>Forgot Password?</Link>
           </div>
 
@@ -64,11 +93,12 @@ function Login({ onLogin }) {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-        <p className="login-hint">
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
+          <p className="login-hint">
+            Don't have an account? <Link to="/register">Register here</Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </AnimatedBackground>
   );
 }
 

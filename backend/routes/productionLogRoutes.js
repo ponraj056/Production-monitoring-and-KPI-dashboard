@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const productionLogController = require('../controllers/productionLogController');
+const { authenticateToken } = require('../middleware/authMiddleware');
+const { requireRole } = require('../middleware/roleCheck');
 
-router.get('/', productionLogController.getAllLogs);
-router.get('/:id', productionLogController.getLogById);
-router.post('/', productionLogController.createLog);
-router.put('/:id', productionLogController.updateLog);
-router.delete('/:id', productionLogController.deleteLog);
+router.get('/', authenticateToken, productionLogController.getAllLogs);
+router.get('/:id', authenticateToken, productionLogController.getLogById);
+router.post('/', authenticateToken, requireRole('admin', 'supervisor'), productionLogController.createLog);
+router.put('/:id', authenticateToken, requireRole('admin', 'supervisor'), productionLogController.updateLog);
+router.delete('/:id', authenticateToken, requireRole('admin', 'supervisor'), productionLogController.deleteLog);
 
-module.exports = router;
+module.exports = router;

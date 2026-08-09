@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : '/api';
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://production-monitoring-and-kpi-dashboard-1.onrender.com/api';
 
 // Helper to get the stored token
 const getToken = () => localStorage.getItem('token');

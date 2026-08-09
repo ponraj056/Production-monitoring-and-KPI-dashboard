@@ -44,9 +44,21 @@ exports.register = async (req, res) => {
     // Send OTP email
     await sendMail(
       email,
-      'Verify Your Account',
-      `Your OTP is: ${otp}`,
-      `<p>Your OTP is: <strong>${otp}</strong>. It will expire in 10 minutes.</p>`
+      'Verify Your Account - ProdMonitor',
+      `Your verification OTP is: ${otp}`,
+      `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #333;">Account Verification</h2>
+        <p>Hello,</p>
+        <p>Thank you for registering. Please use the verification code below to complete your registration:</p>
+        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 4px; margin: 20px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #4a148c;">${otp}</span>
+        </div>
+        <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+        <p style="color: #999; font-size: 12px; text-align: center;">Production Monitoring & KPI Dashboard</p>
+      </div>
+      `
     );
 
     // If admin, send approval email to system admin
@@ -150,9 +162,21 @@ exports.forgotPassword = async (req, res) => {
 
     await sendMail(
       email,
-      'Password Reset OTP',
+      'Password Reset Request - ProdMonitor',
       `Your password reset OTP is: ${otp}`,
-      `<p>Your password reset OTP is: <strong>${otp}</strong>. It will expire in 10 minutes.</p>`
+      `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #333;">Password Reset Request</h2>
+        <p>Hello,</p>
+        <p>We received a request to reset your password. Use the OTP code below to proceed:</p>
+        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; border-radius: 4px; margin: 20px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #d32f2f;">${otp}</span>
+        </div>
+        <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes. If you did not request a password reset, you can safely ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+        <p style="color: #999; font-size: 12px; text-align: center;">Production Monitoring & KPI Dashboard</p>
+      </div>
+      `
     );
 
     res.json({ message: 'If the email exists, an OTP has been sent.' });

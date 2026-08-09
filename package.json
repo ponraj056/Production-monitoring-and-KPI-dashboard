@@ -1,10 +1,8 @@
 {
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "jsonwebtoken": "^9.0.3",
-    "socket.io": "^4.8.3"
-  },
-  "devDependencies": {
-    "socket.io-client": "^4.8.3"
+  "name": "production-monitoring-dashboard",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "npm start --prefix backend"
   }
 }
